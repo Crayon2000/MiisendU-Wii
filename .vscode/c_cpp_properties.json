@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "name": "devkitPPC",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${DEVKITPRO}/libogc/include/**",
+                "${DEVKITPRO}/portlibs/ppc/include/**",
+                "${DEVKITPRO}/portlibs/wii/include/**"
+            ],
+            "defines": [
+                "GEKKO",
+                "HW_RVL"
+            ],
+            "cStandard": "c11",
+            "cppStandard": "gnu++20",
+            "intelliSenseMode": "${default}",
+            "compilerPath": "${DEVKITPPC}/bin/powerpc-eabi-gcc"
+        }
+    ],
+    "version": 4
+}

@@ -1,0 +1,6 @@
+{
+    "name": "devkitPPC",
+    "image": "devkitpro/devkitppc:latest",
+    "postCreateCommand": "bash ./.devcontainer/install-dependencies.sh",
+    "extensions": ["ms-vscode.cpptools"]
+}

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<app version="1">
+    <name>MiisendU Wii</name>
+    <coder>Crayon</coder>
+    <version>0.0.1</version>
+    <release_date>20160812000000</release_date>
+    <short_description>UsendMii client for Wii</short_description> 
+    <long_description>This application is a UsendMii client for Wii. It requires UsendMii to run on your PC.</long_description>
+</app>
