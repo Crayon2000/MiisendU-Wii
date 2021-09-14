@@ -80,10 +80,10 @@ void Application::printHeader() {
     constexpr char logo3[] = R"(| |\/| | | (_-</ -_) ' \/ _` | |_| |  \ \/\/ /| | |)";
     constexpr char logo4[] = R"(|_|  |_|_|_/__/\___|_||_\__,_|\___/    \_/\_/ |_|_| v0.0.1)";
 
-    GRRLIB_PrintfTTF(10, 10 + (15 * 0), ttf_font, logo1, 12, 0xFFFFFFFF);
-    GRRLIB_PrintfTTF(10, 10 + (15 * 1), ttf_font, logo2, 12, 0xFFFFFFFF);
-    GRRLIB_PrintfTTF(10, 10 + (15 * 2), ttf_font, logo3, 12, 0xFFFFFFFF);
-    GRRLIB_PrintfTTF(10, 10 + (15 * 3), ttf_font, logo4, 12, 0xFFFFFFFF);
+    GRRLIB_PrintfTTF(10, 10 + (15 * 1), ttf_font, logo1, 13, 0xFFFFFFFF);
+    GRRLIB_PrintfTTF(10, 10 + (15 * 2), ttf_font, logo2, 13, 0xFFFFFFFF);
+    GRRLIB_PrintfTTF(10, 10 + (15 * 3), ttf_font, logo3, 13, 0xFFFFFFFF);
+    GRRLIB_PrintfTTF(10, 10 + (15 * 4), ttf_font, logo4, 13, 0xFFFFFFFF);
 }
 
 /**
@@ -123,23 +123,23 @@ appscreen Application::screenIpSelection() {
     printHeader();
 
     GRRLIB_PrintfTTF(10, 100 + (15 * 5), ttf_font,
-        "Please insert your computer's IP address below", 12, 0xFFFFFFFF);
+        "Please insert your computer's IP address below", 13, 0xFFFFFFFF);
     GRRLIB_PrintfTTF(10, 100 + (15 * 6), ttf_font,
-        "(use the DPAD to edit the IP address)", 12, 0xFFFFFFFF);
+        "(use the DPAD to edit the IP address)", 13, 0xFFFFFFFF);
 
-    GRRLIB_PrintfTTF(10 + (4 * 7 * selected_digit), 100 + (15 * 8), ttf_font,
-        "vvv", 12, 0xFFFFFFFF);
+    GRRLIB_PrintfTTF(10 + (4 * 8 * selected_digit), 100 + (15 * 8), ttf_font,
+        "vvv", 13, 0xFFFFFFFF);
 
     char * IP_str = (char*)malloc(32);
     snprintf(IP_str, 32, "%3d.%3d.%3d.%3d", IP[0], IP[1], IP[2], IP[3]);
     GRRLIB_PrintfTTF(10, 100 + (15 * 9), ttf_font,
-        IP_str, 12, 0xFFFFFFFF);
+        IP_str, 13, 0xFFFFFFFF);
     free(IP_str);
 
     GRRLIB_PrintfTTF(10, 100 + (15 * 15), ttf_font,
-        "Press 'A' to confirm", 12, 0xFFFFFFFF);
+        "Press 'A' to confirm", 13, 0xFFFFFFFF);
     GRRLIB_PrintfTTF(10, 100 + (15 * 16), ttf_font,
-        "Press the HOME button to exit", 12, 0xFFFFFFFF);
+        "Press the HOME button to exit", 13, 0xFFFFFFFF);
 
     // Stay on this screen
     return appscreen::ipselection;
@@ -204,15 +204,15 @@ appscreen Application::screenSendInput() {
     printHeader();
 
     GRRLIB_PrintfTTF(10, 100 + (15 * 5), ttf_font,
-        msg_connected, 12, 0xFFFFFFFF);
+        msg_connected, 13, 0xFFFFFFFF);
     GRRLIB_PrintfTTF(10, 100 + (15 * 7), ttf_font,
-        "Remember the program will not work without", 12, 0xFFFFFFFF);
+        "Remember the program will not work without", 13, 0xFFFFFFFF);
     GRRLIB_PrintfTTF(10, 100 + (15 * 8), ttf_font,
-        "UsendMii running on your computer.", 12, 0xFFFFFFFF);
+        "UsendMii running on your computer.", 13, 0xFFFFFFFF);
     GRRLIB_PrintfTTF(10, 100 + (15 * 9), ttf_font,
-        "You can get UsendMii from http://wiiubrew.org/wiki/UsendMii", 12, 0xFFFFFFFF);
+        "You can get UsendMii from http://wiiubrew.org/wiki/UsendMii", 13, 0xFFFFFFFF);
     GRRLIB_PrintfTTF(10, 100 + (15 * 16), ttf_font,
-        "Hold the HOME button to exit.", 12, 0xFFFFFFFF);
+        "Hold the HOME button to exit.", 13, 0xFFFFFFFF);
 
     // Stay on this screen
     return appscreen::sendinput;
