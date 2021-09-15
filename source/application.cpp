@@ -2,6 +2,7 @@
 #include "udp.h"
 #include "vpad_to_json.h"
 #include <cstdio>
+#include <fmt/format.h>
 #include <grrlib.h>
 #include <stdlib.h>
 #include <wiiuse/wpad.h>
@@ -27,8 +28,6 @@ Application::Application() :
 
     IP = {192, 168, 50, 213};
     selected_digit = 0;
-    IP_ADDRESS = (char*)malloc(32);
-    msg_connected = (char*)malloc(255);
 }
 
 /**
@@ -36,8 +35,6 @@ Application::Application() :
  */
 Application::~Application()
 {
-    free(IP_ADDRESS);
-    free(msg_connected);
     GRRLIB_FreeTTF(ttf_font);
     WPAD_Shutdown();
     GRRLIB_Exit(); // Be a good boy, clear the memory allocated by GRRLIB
@@ -96,13 +93,13 @@ appscreen Application::screenIpSelection() {
     }
     if (WPAD_ButtonsDown(WPAD_CHAN_0) & WPAD_BUTTON_A) {
         // Get IP Address (without spaces)
-        snprintf(IP_ADDRESS, 32, "%d.%d.%d.%d", IP[0], IP[1], IP[2], IP[3]);
+        IP_ADDRESS = fmt::format("{}.{}.{}.{}", IP[0], IP[1], IP[2], IP[3]);
 
         // Output the IP address
-        snprintf(msg_connected, 255, "Connected to %s:%d", IP_ADDRESS, Port);
+        msg_connected = fmt::format("Connected to {}:{}", IP_ADDRESS, Port);
 
         // Initialize the UDP connection
-        udp_init(IP_ADDRESS, Port);
+        udp_init(IP_ADDRESS.c_str(), Port);
 
         return appscreen::sendinput;
     }
@@ -130,11 +127,9 @@ appscreen Application::screenIpSelection() {
     GRRLIB_PrintfTTF(10 + (4 * 8 * selected_digit), 100 + (15 * 8), ttf_font,
         "vvv", 13, 0xFFFFFFFF);
 
-    char * IP_str = (char*)malloc(32);
-    snprintf(IP_str, 32, "%3d.%3d.%3d.%3d", IP[0], IP[1], IP[2], IP[3]);
+    const std::string IP_str = fmt::format("{:3d}.{:3d}.{:3d}.{:3d}", IP[0], IP[1], IP[2], IP[3]);
     GRRLIB_PrintfTTF(10, 100 + (15 * 9), ttf_font,
-        IP_str, 13, 0xFFFFFFFF);
-    free(IP_str);
+        IP_str.c_str(), 13, 0xFFFFFFFF);
 
     GRRLIB_PrintfTTF(10, 100 + (15 * 15), ttf_font,
         "Press 'A' to confirm", 13, 0xFFFFFFFF);
@@ -186,6 +181,7 @@ appscreen Application::screenSendInput() {
 
     // Check for exit signal
     if (wpad_data0->btns_h & WPAD_BUTTON_HOME && ++holdTime > 240) {
+        udp_deinit();
         return appscreen::exitapp;
     }
     if (wpad_data0->btns_u & WPAD_BUTTON_HOME) {
@@ -199,12 +195,12 @@ appscreen Application::screenSendInput() {
     pad_to_json(pad_data, msg_data, sizeof(msg_data));
 
     // Send the message
-    udp_printf(msg_data);
+    udp_print(msg_data);
 
     printHeader();
 
     GRRLIB_PrintfTTF(10, 100 + (15 * 5), ttf_font,
-        msg_connected, 13, 0xFFFFFFFF);
+        msg_connected.c_str(), 13, 0xFFFFFFFF);
     GRRLIB_PrintfTTF(10, 100 + (15 * 7), ttf_font,
         "Remember the program will not work without", 13, 0xFFFFFFFF);
     GRRLIB_PrintfTTF(10, 100 + (15 * 8), ttf_font,

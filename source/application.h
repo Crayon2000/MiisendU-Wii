@@ -3,6 +3,7 @@
 //---------------------------------------------------------------------------
 
 #include <array>
+#include <string>
 #include <cstdint>
 
 enum class appscreen : uint8_t {
@@ -34,9 +35,9 @@ class Application {
         // Sreen IP Selection
         std::array<uint8_t, 4> IP;
         int8_t selected_digit;
-        char * IP_ADDRESS;
+        std::string IP_ADDRESS;
         uint16_t Port;
-        char * msg_connected;
+        std::string msg_connected;
         uint16_t holdTime;
 };
 //---------------------------------------------------------------------------
