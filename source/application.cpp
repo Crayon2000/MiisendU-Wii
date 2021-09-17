@@ -57,6 +57,8 @@ bool Application::Run()
         case appscreen::sendinput:
             screenId = screenSendInput();
             break;
+        case appscreen::exitapp:
+            [[fallthrough]];
         default:
             GRRLIB_FillScreen(0x000000FF);
             returnvalue = false;

@@ -18,9 +18,12 @@ static volatile int udp_lock = 0;
 
 void udp_init(const char * ipString, unsigned short ipport)
 {
-    udp_socket = net_socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    if (udp_socket < 0)
+    while (net_init() == -EAGAIN);
+
+    udp_socket = net_socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
+    if (udp_socket < 0) {
         return;
+    }
 
     struct sockaddr_in connect_addr;
     memset(&connect_addr, 0, sizeof(connect_addr));
@@ -30,7 +33,7 @@ void udp_init(const char * ipString, unsigned short ipport)
 
     if(net_connect(udp_socket, (struct sockaddr*)&connect_addr, sizeof(connect_addr)) < 0)
     {
-        close(udp_socket);
+        net_close(udp_socket);
         udp_socket = -1;
     }
 }
@@ -39,7 +42,7 @@ void udp_deinit(void)
 {
     if(udp_socket >= 0)
     {
-        close(udp_socket);
+        net_close(udp_socket);
         udp_socket = -1;
     }
 }
@@ -60,8 +63,9 @@ void udp_print(const char *str)
     while (len > 0) {
         int block = len < 1400 ? len : 1400; // take max 1400 bytes per UDP packet
         int ret = net_send(udp_socket, str, block, 0);
-        if(ret < 0)
+        if(ret < 0) {
             break;
+        }
 
         len -= ret;
         str += ret;
