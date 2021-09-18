@@ -1,0 +1,29 @@
+name: Continuous Integration
+
+on: [push, pull_request]
+
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    container:
+      image: devkitpro/devkitppc:latest
+
+    steps:
+
+    - name: Checkout the Git repository
+      uses: actions/checkout@v2
+
+    - name: Build application
+      run: |
+        sh .devcontainer/install-dependencies.sh
+        make build
+
+    - name: Move file
+      run: mv MiisendU-Wii.dol meta/boot.dol
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: MiisendU-Wii
+        path: meta/
