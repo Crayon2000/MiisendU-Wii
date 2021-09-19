@@ -13,3 +13,8 @@
 
 # Windows thumbnail cache
 Thumbs.db
+
+# Visual Studio Code
+.vscode/*
+!.vscode/c_cpp_properties.json
+!.vscode/tasks.json

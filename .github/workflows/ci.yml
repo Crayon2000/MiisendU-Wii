@@ -20,10 +20,13 @@ jobs:
         sh .devcontainer/install-dependencies.sh
         make build
 
-    - name: Move file
-      run: mv MiisendU-Wii.dol meta/boot.dol
+    - name: Prepare artifact
+      run: |
+        mkdir --parents artifact/MiisendU-Wii
+        mv --verbose MiisendU-Wii.dol artifact/MiisendU-Wii/boot.dol
+        cp --verbose meta/* artifact/MiisendU-Wii
 
     - uses: actions/upload-artifact@v2
       with:
         name: MiisendU-Wii
-        path: meta/
+        path: artifact/

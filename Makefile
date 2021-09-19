@@ -19,7 +19,7 @@ TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
 SOURCES		:=	source source/vendor/inih
 DATA		:=	data
-INCLUDES	:=
+INCLUDES	:=	source/vendor/inih
 
 #---------------------------------------------------------------------------------
 # options for code generation
