@@ -15,7 +15,7 @@
  * Application configuration.
  */
 typedef struct {
-    const char* ipaddress;
+    std::string ipaddress;
     int port;
 } Configuration;
 
@@ -29,7 +29,7 @@ static int Handler(void* user, const char* section, const char* name, const char
     Configuration* pconfig = (Configuration*)user;
     if(strcmp(section, "server") == 0) {
         if(strcmp(name, "ipaddress") == 0) {
-            pconfig->ipaddress = strdup(value);
+            pconfig->ipaddress = value;
         }
         else if(strcmp(name, "port") == 0) {
             pconfig->port = atoi(value);
@@ -199,11 +199,8 @@ appscreen Application::screenInit() {
         Configuration config = {nullptr, 4242};
         ini_parse(pathini.c_str(), Handler, &config);
         Port = config.port;
-        if(config.ipaddress != nullptr) {
-            if(inet_pton(config.ipaddress, &IP) > 0) {
-                ip_loaded = true;
-            }
-            free((void*)config.ipaddress);
+        if(inet_pton(config.ipaddress, &IP) > 0) {
+            ip_loaded = true;
         }
     }
     if (ip_loaded == false) {
