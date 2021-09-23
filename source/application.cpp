@@ -7,13 +7,77 @@
 #include <stdlib.h>
 #include <wiiuse/wpad.h>
 #include <ogc/pad.h>
+#include "ini.h"
+#include <network.h>
 #include "OxygenMono-Regular_ttf.h"
+
+/**
+ * Application configuration.
+ */
+typedef struct {
+    const char* ipaddress;
+    int port;
+} Configuration;
+
+
+/**
+ * Handler for ini parser.
+ * @return Returns nonzero on success, zero on error.
+ */
+static int Handler(void* user, const char* section, const char* name, const char* value)
+{
+    Configuration* pconfig = (Configuration*)user;
+    if(strcmp(section, "server") == 0) {
+        if(strcmp(name, "ipaddress") == 0) {
+            pconfig->ipaddress = strdup(value);
+        }
+        else if(strcmp(name, "port") == 0) {
+            pconfig->port = atoi(value);
+        }
+        else {
+            return 0; // Unknown name
+        }
+    }
+    else {
+        return 0; // Unknown section
+    }
+    return 1;
+}
+
+/**
+ * Converts an IPv4 Internet network address in its standard text presentation form into its numeric binary form.
+ * @param addrString A string that contains the text representation of the IP address to convert to numeric binary form.
+ * @param addrBuf A pointer to a buffer in which to store the numeric binary representation of the IP address.
+ * @return If no error occurs, the function returns a value of 1 and the buffer pointed to by the addrBuf parameter contains the binary numeric IP address in network byte order.
+ */
+static int8_t inet_pton(std::string_view addrString, void *addrBuf) {
+    auto a = static_cast<uint8_t *>(addrBuf);
+    for (int8_t i = 0; i < 4; ++i) {
+        int16_t v;
+        int8_t j;
+        for (v = j = 0; j < 3 && std::isdigit(addrString[j]); ++j) {
+            v = 10 * v + addrString[j] - '0';
+        }
+        if (j == 0 || (j > 1 && addrString[0] == '0') || v > 255) {
+            return 0;
+        }
+        a[i] = v;
+        if (addrString[j] == 0 && i == 3) {
+            return 1;
+        }
+        if (addrString[j] != '.') {
+            return 0;
+        }
+        addrString.remove_prefix(j + 1);
+    }
+    return 0;
+}
 
 /**
  * Constructor for the Application class.
  */
 Application::Application() :
-    screenId(appscreen::ipselection),
+    screenId(appscreen::initapp),
     Port(4242),
     holdTime(0)
 {
@@ -26,7 +90,7 @@ Application::Application() :
 
     ttf_font = GRRLIB_LoadTTF(OxygenMono_Regular_ttf, OxygenMono_Regular_ttf_size);
 
-    IP = {192, 168, 50, 213};
+    IP = {192, 168, 1, 100};
     selected_digit = 0;
 }
 
@@ -37,6 +101,7 @@ Application::~Application()
 {
     GRRLIB_FreeTTF(ttf_font);
     WPAD_Shutdown();
+    net_deinit();
     GRRLIB_Exit(); // Be a good boy, clear the memory allocated by GRRLIB
 }
 
@@ -51,6 +116,9 @@ bool Application::Run()
 
     switch(screenId)
     {
+        case appscreen::initapp:
+            screenId = screenInit();
+            return true;
         case appscreen::ipselection:
             screenId = screenIpSelection();
             break;
@@ -71,6 +139,17 @@ bool Application::Run()
 }
 
 /**
+ * Set application path.
+ */
+void Application::SetPath(std::string_view path) {
+    auto const pos = path.find_last_of('/');
+    std::string_view tmp = path.substr(0, pos + 1);
+    if(tmp.empty() == false) {
+        pathini = fmt::format("{}{}", tmp, "settings.ini");
+    }
+}
+
+/**
  * Print Header.
  */
 void Application::printHeader() {
@@ -83,6 +162,59 @@ void Application::printHeader() {
     GRRLIB_PrintfTTF(10, 10 + (15 * 2), ttf_font, logo2, 13, 0xFFFFFFFF);
     GRRLIB_PrintfTTF(10, 10 + (15 * 3), ttf_font, logo3, 13, 0xFFFFFFFF);
     GRRLIB_PrintfTTF(10, 10 + (15 * 4), ttf_font, logo4, 13, 0xFFFFFFFF);
+}
+
+/**
+ * initialization screen.
+ */
+appscreen Application::screenInit() {
+    // Print loading screen
+    GRRLIB_FillScreen(0x000000FF);
+    printHeader();
+    GRRLIB_PrintfTTF(10, 100 + (15 * 5), ttf_font, "Initializing...", 13, 0xFFFFFFFF);
+    GRRLIB_Render();
+
+    // Init network
+    s32 net_result = -1;
+    while (net_result < 0) {
+        net_deinit();
+        do {
+            net_result = net_init();
+        } while (net_result == -EAGAIN);
+        if (net_result < 0) {
+            WPAD_ScanPads();
+            if (WPAD_ButtonsDown(WPAD_CHAN_0) & WPAD_BUTTON_HOME) {
+                return appscreen::exitapp;
+            }
+
+            printHeader();
+            GRRLIB_PrintfTTF(10, 100 + (15 * 5), ttf_font, "Network initialization failed, retrying...", 13, 0xFFFFFFFF);
+            GRRLIB_Render();
+        }
+    }
+
+    // Load default IP address
+    bool ip_loaded = false;
+    if (pathini.empty() == false) {
+        Configuration config = {nullptr, 4242};
+        ini_parse(pathini.c_str(), Handler, &config);
+        Port = config.port;
+        if(config.ipaddress != nullptr) {
+            if(inet_pton(config.ipaddress, &IP) > 0) {
+                ip_loaded = true;
+            }
+            free((void*)config.ipaddress);
+        }
+    }
+    if (ip_loaded == false) {
+        uint32_t ip = net_gethostip();
+        IP[0] = (ip >> 24) & 0xFF;
+        IP[1] = (ip >> 16) & 0xFF;
+        IP[2] = (ip >>  8) & 0xFF;
+        IP[3] = (ip >>  0) & 0xFF;
+    }
+
+    return appscreen::ipselection;
 }
 
 /**
@@ -184,6 +316,21 @@ appscreen Application::screenSendInput() {
     // Check for exit signal
     if (wpad_data0->btns_h & WPAD_BUTTON_HOME && ++holdTime > 240) {
         udp_deinit();
+
+        // Save settings to file
+        if (pathini.empty() == false) {
+            FILE * ini_file = fopen(pathini.c_str(), "w");
+            if (ini_file != nullptr) {
+                fprintf(ini_file,
+                    "[server]\n"
+                    "ipaddress=%s\n"
+                    "port=%d\n"
+                    "\n",
+                    IP_ADDRESS.c_str(), Port);
+                fclose(ini_file);
+            }
+        }
+
         return appscreen::exitapp;
     }
     if (wpad_data0->btns_u & WPAD_BUTTON_HOME) {

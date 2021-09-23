@@ -10,8 +10,11 @@
 /**
  * Entry point.
  */
-int main(int argc, char **argv) {
+int main(int argc, char *argv[]) {
     auto app = std::make_unique<Application>();
+    if(argc > 0 && argv[0] != nullptr) {
+        app->SetPath(argv[0]);
+    }
     while(app->Run()) {}
     exit(0); // Use exit() to exit a program
 }

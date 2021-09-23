@@ -7,10 +7,11 @@ The button states from the Wii Remotes and the GameCube Controllers will be sent
 
 Prerequisites:
 
-* Packages in the wii-dev group and ppc-jansson from devkitpro
+* Packages in the wii-dev and ppc-portlibs group from devkitpro (or get the *devkitpro/devkitppc:latest* Docker image)
 
 To compile:
 
 ```bash
-> make
+sh .devcontainer/install-dependencies.sh
+make
 ```

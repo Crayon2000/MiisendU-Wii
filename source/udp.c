@@ -1,6 +1,3 @@
-//#include <socket.h>
-//#include <netinet/in.h>
-//#include <arpa/inet.h>
 #include <network.h>
 #include <stdarg.h>
 #include <stdlib.h>
@@ -18,8 +15,6 @@ static volatile int udp_lock = 0;
 
 void udp_init(const char * ipString, unsigned short ipport)
 {
-    while (net_init() == -EAGAIN);
-
     udp_socket = net_socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
     if (udp_socket < 0) {
         return;

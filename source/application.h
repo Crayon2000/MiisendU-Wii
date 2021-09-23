@@ -7,6 +7,7 @@
 #include <cstdint>
 
 enum class appscreen : uint8_t {
+    initapp,
     exitapp,
     ipselection,
     sendinput
@@ -22,9 +23,11 @@ class Application {
         Application& operator=(Application const&) = delete;
 
         bool Run();
+        void SetPath(std::string_view path);
 
     protected:
         void printHeader();
+        appscreen screenInit();
         appscreen screenIpSelection();
         appscreen screenSendInput();
 
@@ -39,6 +42,7 @@ class Application {
         uint16_t Port;
         std::string msg_connected;
         uint16_t holdTime;
+        std::string pathini;
 };
 //---------------------------------------------------------------------------
 #endif
