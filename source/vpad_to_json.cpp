@@ -29,14 +29,6 @@ static const std::map nunchukmask = {
 };
 
 /**
- * Mask for the Classic Controller.
- */
-static const std::map classicmask = {
-    std::pair{WPAD_NUNCHUK_BUTTON_Z, 0x2000},
-    {WPAD_NUNCHUK_BUTTON_C, 0x4000}
-};
-
-/**
  * Convert GamePad data to JSON string used by UsendMii.
  * @param[in] pad_data Controllers data.
  * @param[out] out Buffer where to copy the formatted data.
@@ -100,51 +92,7 @@ void pad_to_json(PADData pad_data, char* out, uint32_t out_size)
                     break;
                 case EXP_CLASSIC:
                     { // Classic Controller
-                        u32 holdclassic = 0;
-                        u32 badclassic = pad_data.wpad[i]->btns_h;
-                        holdclassic = badclassic; // fix me
-
-/*
-#define WPAD_CLASSIC_BUTTON_UP					(0x0001u<<16)
-#define WPAD_CLASSIC_BUTTON_LEFT				(0x0002u<<16)
-#define WPAD_CLASSIC_BUTTON_ZR					(0x0004u<<16)
-#define WPAD_CLASSIC_BUTTON_X					(0x0008u<<16)
-#define WPAD_CLASSIC_BUTTON_A					(0x0010u<<16)
-#define WPAD_CLASSIC_BUTTON_Y					(0x0020u<<16)
-#define WPAD_CLASSIC_BUTTON_B					(0x0040u<<16)
-#define WPAD_CLASSIC_BUTTON_ZL					(0x0080u<<16)
-#define WPAD_CLASSIC_BUTTON_FULL_R				(0x0200u<<16)
-#define WPAD_CLASSIC_BUTTON_PLUS				(0x0400u<<16)
-#define WPAD_CLASSIC_BUTTON_HOME				(0x0800u<<16)
-#define WPAD_CLASSIC_BUTTON_MINUS				(0x1000u<<16)
-#define WPAD_CLASSIC_BUTTON_FULL_L				(0x2000u<<16)
-#define WPAD_CLASSIC_BUTTON_DOWN				(0x4000u<<16)
-#define WPAD_CLASSIC_BUTTON_RIGHT				(0x8000u<<16)
-
-        * 0x00000001 Up button
-        * 0x00000002 Left button
-        * 0x00000004 ZR trigger
-        * 0x00000008 x button
-        * 0x00000010 a button
-        * 0x00000020 y button
-        * 0x00000040 b button
-        * 0x00000080 ZL trigger
-        * 0x00000200 R trigger
-        * 0x00000400 + button
-        * 0x00000800 HOME button
-        * 0x00001000 - button
-        * 0x00002000 L trigger
-        * 0x00004000 Down button
-        * 0x00008000 Right button
-        * 0x00010000 Left stick emulated left
-        * 0x00020000 Left stick emulated right
-        * 0x00040000 Left stick emulated down
-        * 0x00080000 Left stick emulated up
-        * 0x00100000 Right stick emulated left
-        * 0x00200000 Right stick emulated right
-        * 0x00400000 Right stick emulated down
-        * 0x00800000 Right stick emulated up
-*/
+                        u32 holdclassic = pad_data.wpad[i]->btns_h >> 16;
 
                         json_t *extension = json_object();
                         json_object_set_new_nocheck(wiiremote, "extension", extension);
@@ -189,6 +137,12 @@ void pad_to_json(PADData pad_data, char* out, uint32_t out_size)
             json_t *gccontroller = json_object();
             json_object_set_new_nocheck(gccontroller, "order", json_integer(i + 1));
             json_object_set_new_nocheck(gccontroller, "hold", json_integer(pad_data.pad[i]->button));
+            json_object_set_new_nocheck(gccontroller, "ctrlStickX", json_real(pad_data.pad[i]->stickX));
+            json_object_set_new_nocheck(gccontroller, "ctrlStickY", json_real(pad_data.pad[i]->stickY));
+            json_object_set_new_nocheck(gccontroller, "cStickX", json_real(pad_data.pad[i]->substickX));
+            json_object_set_new_nocheck(gccontroller, "cStickY", json_real(pad_data.pad[i]->substickY));
+            json_object_set_new_nocheck(gccontroller, "lTrigger", json_real(pad_data.pad[i]->triggerL));
+            json_object_set_new_nocheck(gccontroller, "rTrigger", json_real(pad_data.pad[i]->triggerR));
             json_array_append(gccontrollers, gccontroller);
         }
     }
