@@ -137,12 +137,12 @@ void pad_to_json(PADData pad_data, char* out, uint32_t out_size)
             json_t *gccontroller = json_object();
             json_object_set_new_nocheck(gccontroller, "order", json_integer(i + 1));
             json_object_set_new_nocheck(gccontroller, "hold", json_integer(pad_data.pad[i]->button));
-            json_object_set_new_nocheck(gccontroller, "ctrlStickX", json_real(pad_data.pad[i]->stickX));
-            json_object_set_new_nocheck(gccontroller, "ctrlStickY", json_real(pad_data.pad[i]->stickY));
-            json_object_set_new_nocheck(gccontroller, "cStickX", json_real(pad_data.pad[i]->substickX));
-            json_object_set_new_nocheck(gccontroller, "cStickY", json_real(pad_data.pad[i]->substickY));
-            json_object_set_new_nocheck(gccontroller, "lTrigger", json_real(pad_data.pad[i]->triggerL));
-            json_object_set_new_nocheck(gccontroller, "rTrigger", json_real(pad_data.pad[i]->triggerR));
+            json_object_set_new_nocheck(gccontroller, "ctrlStickX", json_integer(pad_data.pad[i]->stickX));
+            json_object_set_new_nocheck(gccontroller, "ctrlStickY", json_integer(pad_data.pad[i]->stickY));
+            json_object_set_new_nocheck(gccontroller, "cStickX", json_integer(pad_data.pad[i]->substickX));
+            json_object_set_new_nocheck(gccontroller, "cStickY", json_integer(pad_data.pad[i]->substickY));
+            json_object_set_new_nocheck(gccontroller, "lTrigger", json_integer(pad_data.pad[i]->triggerL));
+            json_object_set_new_nocheck(gccontroller, "rTrigger", json_integer(pad_data.pad[i]->triggerR));
             json_array_append(gccontrollers, gccontroller);
         }
     }
