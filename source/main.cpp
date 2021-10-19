@@ -1,14 +1,10 @@
-/*===========================================
-        GRRLIB (GX Version)
-        - Template Code -
-
-        Minimum Code To Use GRRLIB
-============================================*/
 #include <memory>
 #include "application.h"
 
 /**
  * Entry point.
+ * @param argc An integer that contains the count of arguments.
+ * @param argv An array of null-terminated strings representing command-line arguments.
  */
 int main(int argc, char *argv[]) {
     auto app = std::make_unique<Application>();
@@ -16,5 +12,5 @@ int main(int argc, char *argv[]) {
         app->SetPath(argv[0]);
     }
     while(app->Run()) {}
-    exit(0); // Use exit() to exit a program
+    exit(0); // Exit the program
 }

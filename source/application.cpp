@@ -75,6 +75,7 @@ Application::~Application()
 
 /**
  * Run.
+ * @return Returns true if application should keep running.
  */
 bool Application::Run()
 {
@@ -134,7 +135,8 @@ void Application::printHeader() {
 }
 
 /**
- * initialization screen.
+ * Initialization screen.
+ * @return Returns the appscreen to use next.
  */
 appscreen Application::screenInit() {
     // Print loading screen
@@ -165,16 +167,18 @@ appscreen Application::screenInit() {
     // Load default IP address
     bool ip_loaded = false;
     if (pathini.empty() == false) {
-        std::string ipaddress;
         Port = 4242;
-        inipp::Ini<char> ini;
         std::ifstream is(pathini);
-        ini.parse(is);
-        inipp::extract(ini.sections["server"]["port"], Port);
-        inipp::extract(ini.sections["server"]["ipaddress"], ipaddress);
-        is.close();
-        if(inet_pton(ipaddress, &IP) > 0) {
-            ip_loaded = true;
+        if (is.good() == true) {
+            std::string ipaddress;
+            inipp::Ini<char> ini;
+            ini.parse(is);
+            inipp::extract(ini.sections["server"]["port"], Port);
+            inipp::extract(ini.sections["server"]["ipaddress"], ipaddress);
+            is.close();
+            if(inet_pton(ipaddress, &IP) > 0) {
+                ip_loaded = true;
+            }
         }
     }
     if (ip_loaded == false) {
@@ -190,6 +194,7 @@ appscreen Application::screenInit() {
 
 /**
  * IP selection screen.
+ * @return Returns the appscreen to use next.
  */
 appscreen Application::screenIpSelection() {
     // If [HOME] was pressed on the first Wiimote, break out of the loop
@@ -247,6 +252,7 @@ appscreen Application::screenIpSelection() {
 
 /**
  * Send input screen.
+ * @return Returns the appscreen to use next.
  */
 appscreen Application::screenSendInput() {
     PADStatus padstatus[PAD_CHANMAX];
@@ -290,14 +296,16 @@ appscreen Application::screenSendInput() {
 
         // Save settings to file
         if (pathini.empty() == false) {
-            inipp::Ini<char> ini;
             std::ofstream os(pathini);
-            ini.sections.emplace("server", (inipp::Ini<char>::Section) {
-                {"port", std::to_string(Port)},
-                {"ipaddress", IP_ADDRESS},
-            });
-            ini.generate(os);
-            os.close();
+            if (os.good() == true) {
+                inipp::Ini<char> ini;
+                ini.sections.emplace("server", (inipp::Ini<char>::Section) {
+                    {"port", std::to_string(Port)},
+                    {"ipaddress", IP_ADDRESS},
+                });
+                ini.generate(os);
+                os.close();
+            }
         }
 
         return appscreen::exitapp;
