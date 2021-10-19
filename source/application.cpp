@@ -2,47 +2,15 @@
 #include "udp.h"
 #include "vpad_to_json.h"
 #include <cstdio>
+#include <fstream>
 #include <fmt/format.h>
 #include <grrlib.h>
+#include <inipp.h>
 #include <stdlib.h>
 #include <wiiuse/wpad.h>
 #include <ogc/pad.h>
-#include "ini.h"
 #include <network.h>
 #include "OxygenMono-Regular_ttf.h"
-
-/**
- * Application configuration.
- */
-typedef struct {
-    std::string ipaddress;
-    int port;
-} Configuration;
-
-
-/**
- * Handler for ini parser.
- * @return Returns nonzero on success, zero on error.
- */
-static int Handler(void* user, const char* section, const char* name, const char* value)
-{
-    Configuration* pconfig = (Configuration*)user;
-    if(strcmp(section, "server") == 0) {
-        if(strcmp(name, "ipaddress") == 0) {
-            pconfig->ipaddress = value;
-        }
-        else if(strcmp(name, "port") == 0) {
-            pconfig->port = atoi(value);
-        }
-        else {
-            return 0; // Unknown name
-        }
-    }
-    else {
-        return 0; // Unknown section
-    }
-    return 1;
-}
 
 /**
  * Converts an IPv4 Internet network address in its standard text presentation form into its numeric binary form.
@@ -140,12 +108,13 @@ bool Application::Run()
 
 /**
  * Set application path.
+ * @param path The path to set.
  */
 void Application::SetPath(std::string_view path) {
     auto const pos = path.find_last_of('/');
     std::string_view tmp = path.substr(0, pos + 1);
     if(tmp.empty() == false) {
-        pathini = fmt::format("{}{}", tmp, "settings.ini");
+        pathini = fmt::format("{}settings.ini", tmp);
     }
 }
 
@@ -196,10 +165,15 @@ appscreen Application::screenInit() {
     // Load default IP address
     bool ip_loaded = false;
     if (pathini.empty() == false) {
-        Configuration config = {nullptr, 4242};
-        ini_parse(pathini.c_str(), Handler, &config);
-        Port = config.port;
-        if(inet_pton(config.ipaddress, &IP) > 0) {
+        std::string ipaddress;
+        Port = 4242;
+        inipp::Ini<char> ini;
+        std::ifstream is(pathini);
+        ini.parse(is);
+        inipp::extract(ini.sections["server"]["port"], Port);
+        inipp::extract(ini.sections["server"]["ipaddress"], ipaddress);
+        is.close();
+        if(inet_pton(ipaddress, &IP) > 0) {
             ip_loaded = true;
         }
     }
@@ -316,16 +290,14 @@ appscreen Application::screenSendInput() {
 
         // Save settings to file
         if (pathini.empty() == false) {
-            FILE * ini_file = fopen(pathini.c_str(), "w");
-            if (ini_file != nullptr) {
-                fprintf(ini_file,
-                    "[server]\n"
-                    "ipaddress=%s\n"
-                    "port=%d\n"
-                    "\n",
-                    IP_ADDRESS.c_str(), Port);
-                fclose(ini_file);
-            }
+            inipp::Ini<char> ini;
+            std::ofstream os(pathini);
+            ini.sections.emplace("server", (inipp::Ini<char>::Section) {
+                {"port", std::to_string(Port)},
+                {"ipaddress", IP_ADDRESS},
+            });
+            ini.generate(os);
+            os.close();
         }
 
         return appscreen::exitapp;

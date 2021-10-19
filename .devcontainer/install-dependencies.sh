@@ -19,3 +19,12 @@ cd build
 /opt/devkitpro/devkitPPC/bin/powerpc-eabi-cmake -DFMT_TEST=0 -DCMAKE_INSTALL_PREFIX=/opt/devkitpro/portlibs/ppc ..
 make install
 rm -rf /tmp/fmt-*
+
+# Install IniPP library
+wget https://github.com/mcmtroffaes/inipp/archive/refs/tags/1.0.12.tar.gz -O - | tar -xz --verbose --directory=/tmp/
+cd /tmp/inipp-*
+mkdir build
+cd build
+/opt/devkitpro/devkitPPC/bin/powerpc-eabi-cmake -DCMAKE_INSTALL_PREFIX=/opt/devkitpro/portlibs/ppc ..
+make install
+rm -rf /tmp/inipp-*
