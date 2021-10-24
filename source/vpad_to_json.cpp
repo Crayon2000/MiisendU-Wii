@@ -1,5 +1,4 @@
 #include <map>
-#include <string.h>
 #include <jansson.h>
 #include "vpad_to_json.h"
 
@@ -31,10 +30,9 @@ static const std::map nunchukmask = {
 /**
  * Convert GamePad data to JSON string used by UsendMii.
  * @param[in] pad_data Controllers data.
- * @param[out] out Buffer where to copy the formatted data.
- * @param[in] out_size Size of the out buffer.
+ * @param[out] out The string where to copy the formatted data.
  */
-void pad_to_json(PADData pad_data, char* out, uint32_t out_size)
+void pad_to_json(PADData pad_data, std::string& out)
 {
     json_t *root = json_object();
 
@@ -149,7 +147,7 @@ void pad_to_json(PADData pad_data, char* out, uint32_t out_size)
 
     // Convert to string
     char* s = json_dumps(root, JSON_COMPACT | JSON_REAL_PRECISION(10));
-    strncpy(out, s, out_size);
+    out = s;
     free(s);
 
     json_decref(root);

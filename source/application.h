@@ -1,5 +1,4 @@
-#ifndef ApplicationH
-#define ApplicationH
+#pragma once
 //---------------------------------------------------------------------------
 
 #include <array>
@@ -45,4 +44,3 @@ class Application {
         std::string pathini;
 };
 //---------------------------------------------------------------------------
-#endif

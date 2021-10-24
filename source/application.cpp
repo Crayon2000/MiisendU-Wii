@@ -6,7 +6,7 @@
 #include <fmt/format.h>
 #include <grrlib.h>
 #include <inipp.h>
-#include <stdlib.h>
+#include <cstdlib>
 #include <wiiuse/wpad.h>
 #include <ogc/pad.h>
 #include <network.h>
@@ -314,14 +314,14 @@ appscreen Application::screenSendInput() {
         holdTime = 0;
     }
 
-    // The buffer sent to the computer
-    char msg_data[1024];
+    // The string sent to the computer
+    std::string msg_data;
 
     // Transform to JSON
-    pad_to_json(pad_data, msg_data, sizeof(msg_data));
+    pad_to_json(pad_data, msg_data);
 
     // Send the message
-    udp_print(msg_data);
+    udp_print(msg_data.c_str());
 
     printHeader();
 
