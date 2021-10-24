@@ -1,5 +1,7 @@
 # MiisendU Wii
 
+[![Continuous Integration](https://github.com/Crayon2000/MiisendU-Wii/actions/workflows/ci.yml/badge.svg)](https://github.com/Crayon2000/MiisendU-Wii/actions/workflows/ci.yml)
+
 This homebrew for the Wii is a UsendMii client application.
 The button states from the Wii Remotes and the GameCube Controllers will be sent to the server.
 
