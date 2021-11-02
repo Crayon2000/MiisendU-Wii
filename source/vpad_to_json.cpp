@@ -28,6 +28,30 @@ static const std::map nunchukmask = {
 };
 
 /**
+ * Get the calibrated stick value.
+ * @param pos The position.
+ * @param min The minimum value.
+ * @param max The maximaum value.
+ * @param center The center value.
+ * @return The calibrated stick value.
+ */
+[[nodiscard]] static constexpr float getStickValue(float pos, float min, float max, float center)
+{
+    if(pos == center)
+    {
+        return 0.0f;
+    }
+    else if(pos > center)
+    {
+        return (pos - center) / (max - center + 1.0f);
+    }
+    else
+    {
+        return (pos - min) / (center - min + 1.0f) - 1.0f;
+    }
+}
+
+/**
  * Convert GamePad data to JSON string used by UsendMii.
  * @param[in] pad_data Controllers data.
  * @param[out] out The string where to copy the formatted data.
@@ -80,26 +104,38 @@ void pad_to_json(PADData pad_data, std::string& out)
                             }
                         }
 
+                        auto js = pad_data.wpad[i]->exp.nunchuk.js;
+                        auto x = getStickValue(js.pos.x, js.min.x, js.max.x, js.center.x);
+                        auto y = getStickValue(js.pos.y, js.min.y, js.max.y, js.center.y);
+
                         json_t *extension = json_object();
                         json_object_set_new_nocheck(wiiremote, "extension", extension);
                         json_object_set_new_nocheck(extension, "type", json_string("nunchuk"));
                         json_object_set_new_nocheck(extension, "hold", json_integer(holdnunchuk));
-                        json_object_set_new_nocheck(extension, "stickX", json_real(pad_data.wpad[i]->exp.nunchuk.js.pos.x));
-                        json_object_set_new_nocheck(extension, "stickY", json_real(pad_data.wpad[i]->exp.nunchuk.js.pos.y));
+                        json_object_set_new_nocheck(extension, "stickX", json_real(x));
+                        json_object_set_new_nocheck(extension, "stickY", json_real(y));
                     }
                     break;
                 case EXP_CLASSIC:
                     { // Classic Controller
                         u32 holdclassic = pad_data.wpad[i]->btns_h >> 16;
 
+                        auto ljs = pad_data.wpad[i]->exp.classic.ljs;
+                        auto lx = getStickValue(ljs.pos.x, ljs.min.x, ljs.max.x, ljs.center.x);
+                        auto ly = getStickValue(ljs.pos.y, ljs.min.y, ljs.max.y, ljs.center.y);
+
+                        auto rjs = pad_data.wpad[i]->exp.classic.rjs;
+                        auto rx = getStickValue(rjs.pos.x, rjs.min.x, rjs.max.x, rjs.center.x);
+                        auto ry = getStickValue(rjs.pos.y, rjs.min.y, rjs.max.y, rjs.center.y);
+
                         json_t *extension = json_object();
                         json_object_set_new_nocheck(wiiremote, "extension", extension);
                         json_object_set_new_nocheck(extension, "type", json_string("classic"));
                         json_object_set_new_nocheck(extension, "hold", json_integer(holdclassic));
-                        json_object_set_new_nocheck(extension, "lStickX", json_real(pad_data.wpad[i]->exp.classic.ljs.pos.x));
-                        json_object_set_new_nocheck(extension, "lStickY", json_real(pad_data.wpad[i]->exp.classic.ljs.pos.y));
-                        json_object_set_new_nocheck(extension, "rStickX", json_real(pad_data.wpad[i]->exp.classic.rjs.pos.x));
-                        json_object_set_new_nocheck(extension, "rStickY", json_real(pad_data.wpad[i]->exp.classic.rjs.pos.y));
+                        json_object_set_new_nocheck(extension, "lStickX", json_real(lx));
+                        json_object_set_new_nocheck(extension, "lStickY", json_real(ly));
+                        json_object_set_new_nocheck(extension, "rStickX", json_real(rx));
+                        json_object_set_new_nocheck(extension, "rStickY", json_real(ry));
                         json_object_set_new_nocheck(extension, "lTrigger", json_real(pad_data.wpad[i]->exp.classic.l_shoulder));
                         json_object_set_new_nocheck(extension, "rTrigger", json_real(pad_data.wpad[i]->exp.classic.r_shoulder));
                     }
