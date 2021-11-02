@@ -13,6 +13,27 @@
 #include "OxygenMono-Regular_ttf.h"
 
 /**
+ * Callbacks will set this to true if called.
+ */
+static bool exitApp = false;
+
+/**
+ * Callback for the reset button on the Wii.
+ */
+static void WiiResetPressed(uint32_t irq, void* ctx)
+{
+    exitApp = true;
+}
+
+/**
+ * Callback for the power button on the Wii.
+ */
+static void WiiPowerPressed()
+{
+    exitApp = true;
+}
+
+/**
  * Converts an IPv4 Internet network address in its standard text presentation form into its numeric binary form.
  * @param addrString A string that contains the text representation of the IP address to convert to numeric binary form.
  * @param addrBuf A pointer to a buffer in which to store the numeric binary representation of the IP address.
@@ -56,6 +77,10 @@ Application::Application() :
     WPAD_Init();
     PAD_Init();
 
+    // Register callbacks
+    SYS_SetResetCallback(WiiResetPressed);
+    SYS_SetPowerCallback(WiiPowerPressed);
+
     ttf_font = GRRLIB_LoadTTF(OxygenMono_Regular_ttf, OxygenMono_Regular_ttf_size);
 
     IP = {192, 168, 1, 100};
@@ -82,6 +107,12 @@ bool Application::Run()
     bool returnvalue = true;
     WPAD_ScanPads(); // Scan the Wii remotes
     //PAD_ScanPads(); // Scan the GC Controller
+
+    // Check if the Wii buttons were pressed
+    if(exitApp == true)
+    {   // Exit the application
+        screenId = appscreen::exitapp;
+    }
 
     switch(screenId)
     {
