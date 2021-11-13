@@ -1,5 +1,4 @@
 #include <map>
-#include <cmath>
 #include <jansson.h>
 #include "vpad_to_json.h"
 
@@ -162,7 +161,7 @@ void pad_to_json(PADData pad_data, std::string& out)
                         auto js = pad_data.wpad[i]->exp.nunchuk.js;
                         auto x = getStickValue(js.pos.x, js.min.x, js.max.x, js.center.x);
                         auto y = getStickValue(js.pos.y, js.min.y, js.max.y, js.center.y);
-                        if(std::hypot(x, y) > 0.2f)
+                        if(js.mag > 0.2f)
                         {   // Not in dead-zone
                             holdnunchuk |= analogStickToDPad(js.ang, 0x0001, 0x0002, 0x0004, 0x0008);
                         }
@@ -182,7 +181,7 @@ void pad_to_json(PADData pad_data, std::string& out)
                         auto ljs = pad_data.wpad[i]->exp.classic.ljs;
                         auto lx = getStickValue(ljs.pos.x, ljs.min.x, ljs.max.x, ljs.center.x);
                         auto ly = getStickValue(ljs.pos.y, ljs.min.y, ljs.max.y, ljs.center.y);
-                        if(std::hypot(lx, ly) > 0.2f)
+                        if(ljs.mag > 0.2f)
                         {   // Not in dead-zone
                             holdclassic |= analogStickToDPad(ljs.ang, 0x00010000, 0x00020000, 0x00040000, 0x00080000);
                         }
@@ -190,7 +189,7 @@ void pad_to_json(PADData pad_data, std::string& out)
                         auto rjs = pad_data.wpad[i]->exp.classic.rjs;
                         auto rx = getStickValue(rjs.pos.x, rjs.min.x, rjs.max.x, rjs.center.x);
                         auto ry = getStickValue(rjs.pos.y, rjs.min.y, rjs.max.y, rjs.center.y);
-                        if(std::hypot(rx, ry) > 0.2f)
+                        if(rjs.mag > 0.2f)
                         {   // Not in dead-zone
                             holdclassic |= analogStickToDPad(rjs.ang, 0x00100000, 0x00200000, 0x00400000, 0x00800000);
                         }
