@@ -1,5 +1,5 @@
 #include <map>
-#include <jansson.h>
+#include "rapidjson/writer.h"
 #include "vpad_to_json.h"
 
 /**
@@ -108,11 +108,15 @@ static const std::map nunchukmask = {
 /**
  * Convert GamePad data to JSON string used by UsendMii.
  * @param[in] pad_data Controllers data.
- * @param[out] out The string where to copy the formatted data.
+ * @return The JSON string.
  */
-void pad_to_json(PADData pad_data, std::string& out)
+std::string pad_to_json(PADData pad_data)
 {
-    json_t *root = json_object();
+    rapidjson::StringBuffer sb;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
+    writer.SetMaxDecimalPlaces(10);
+
+    writer.StartObject(); // Start root object
 
     // Wii Remotes
     if(pad_data.wpad[WPAD_CHAN_0] != nullptr ||
@@ -120,8 +124,8 @@ void pad_to_json(PADData pad_data, std::string& out)
        pad_data.wpad[WPAD_CHAN_2] != nullptr ||
        pad_data.wpad[WPAD_CHAN_3] != nullptr)
     {
-        json_t *wiiremotes = json_array();
-        json_object_set_new_nocheck(root, "wiiRemotes", wiiremotes);
+        writer.Key("wiiRemotes");
+        writer.StartArray();
         for(int i = 0; i < 4; ++i)
         {
             if(pad_data.wpad[i] == nullptr)
@@ -138,13 +142,19 @@ void pad_to_json(PADData pad_data, std::string& out)
                 }
             }
 
-            json_t *wiiremote = json_object();
-            json_object_set_new_nocheck(wiiremote, "order", json_integer(i + 1));
-            json_object_set_new_nocheck(wiiremote, "hold", json_integer(holdwii));
-            json_object_set_new_nocheck(wiiremote, "posX", json_integer(pad_data.wpad[i]->ir.x));
-            json_object_set_new_nocheck(wiiremote, "posY", json_integer(pad_data.wpad[i]->ir.y));
-            //json_object_set_new_nocheck(wiiremote, "angleX", json_real(pad_data.wpad[i]->angle.x));
-            //json_object_set_new_nocheck(wiiremote, "angleY", json_real(pad_data.wpad[i]->angle.y));
+            writer.StartObject(); // Start wiiremote object
+            writer.Key("order");
+            writer.Uint(i + 1);
+            writer.Key("hold");
+            writer.Uint(holdwii);
+            writer.Key("posX");
+            writer.Int(pad_data.wpad[i]->ir.x);
+            writer.Key("posY");
+            writer.Int(pad_data.wpad[i]->ir.y);
+            //writer.Key("angleX");
+            //writer.Double(pad_data.wpad[i]->angle.x);
+            //writer.Key("angleY");
+            //writer.Double(pad_data.wpad[i]->angle.y);
             switch(pad_data.wpad[i]->exp.type)
             {
                 case EXP_NUNCHUK:
@@ -166,12 +176,17 @@ void pad_to_json(PADData pad_data, std::string& out)
                             holdnunchuk |= analogStickToDPad(js.ang, 0x0001, 0x0002, 0x0004, 0x0008);
                         }
 
-                        json_t *extension = json_object();
-                        json_object_set_new_nocheck(wiiremote, "extension", extension);
-                        json_object_set_new_nocheck(extension, "type", json_string("nunchuk"));
-                        json_object_set_new_nocheck(extension, "hold", json_integer(holdnunchuk));
-                        json_object_set_new_nocheck(extension, "stickX", json_real(x));
-                        json_object_set_new_nocheck(extension, "stickY", json_real(y));
+                        writer.Key("extension");
+                        writer.StartObject(); // Start extension object
+                        writer.Key("type");
+                        writer.String("nunchuk");
+                        writer.Key("hold");
+                        writer.Uint(holdnunchuk);
+                        writer.Key("stickX");
+                        writer.Double(x);
+                        writer.Key("stickY");
+                        writer.Double(y);
+                        writer.EndObject(); // Start extension object
                     }
                     break;
                 case EXP_CLASSIC:
@@ -194,16 +209,25 @@ void pad_to_json(PADData pad_data, std::string& out)
                             holdclassic |= analogStickToDPad(rjs.ang, 0x00100000, 0x00200000, 0x00400000, 0x00800000);
                         }
 
-                        json_t *extension = json_object();
-                        json_object_set_new_nocheck(wiiremote, "extension", extension);
-                        json_object_set_new_nocheck(extension, "type", json_string("classic"));
-                        json_object_set_new_nocheck(extension, "hold", json_integer(holdclassic));
-                        json_object_set_new_nocheck(extension, "lStickX", json_real(lx));
-                        json_object_set_new_nocheck(extension, "lStickY", json_real(ly));
-                        json_object_set_new_nocheck(extension, "rStickX", json_real(rx));
-                        json_object_set_new_nocheck(extension, "rStickY", json_real(ry));
-                        json_object_set_new_nocheck(extension, "lTrigger", json_real(pad_data.wpad[i]->exp.classic.l_shoulder));
-                        json_object_set_new_nocheck(extension, "rTrigger", json_real(pad_data.wpad[i]->exp.classic.r_shoulder));
+                        writer.Key("extension");
+                        writer.StartObject(); // Start extension object
+                        writer.Key("type");
+                        writer.String("classic");
+                        writer.Key("hold");
+                        writer.Uint(holdclassic);
+                        writer.Key("lStickX");
+                        writer.Double(lx);
+                        writer.Key("lStickY");
+                        writer.Double(ly);
+                        writer.Key("rStickX");
+                        writer.Double(rx);
+                        writer.Key("rStickY");
+                        writer.Double(ry);
+                        writer.Key("lTrigger");
+                        writer.Double(pad_data.wpad[i]->exp.classic.l_shoulder);
+                        writer.Key("rTrigger");
+                        writer.Double(pad_data.wpad[i]->exp.classic.r_shoulder);
+                        writer.EndObject(); // Start extension object
                     }
                     break;
                 case EXP_GUITAR_HERO_3:
@@ -215,8 +239,9 @@ void pad_to_json(PADData pad_data, std::string& out)
                 default:
                     break;
             }
-            json_array_append(wiiremotes, wiiremote);
+            writer.EndObject(); // End wiiremote object
         }
+        writer.EndArray();
     }
 
     // GameCube Controllers
@@ -225,8 +250,8 @@ void pad_to_json(PADData pad_data, std::string& out)
        pad_data.pad[PAD_CHAN2] != nullptr ||
        pad_data.pad[PAD_CHAN3] != nullptr)
     {
-        json_t *gccontrollers = json_array();
-        json_object_set_new_nocheck(root, "gameCubeControllers", gccontrollers);
+        writer.Key("gameCubeControllers");
+        writer.StartArray();
         for(int i = 0; i < 4; ++i)
         {
             if(pad_data.pad[i] == nullptr)
@@ -234,23 +259,30 @@ void pad_to_json(PADData pad_data, std::string& out)
                 continue;
             }
 
-            json_t *gccontroller = json_object();
-            json_object_set_new_nocheck(gccontroller, "order", json_integer(i + 1));
-            json_object_set_new_nocheck(gccontroller, "hold", json_integer(pad_data.pad[i]->button));
-            json_object_set_new_nocheck(gccontroller, "ctrlStickX", json_integer(pad_data.pad[i]->stickX));
-            json_object_set_new_nocheck(gccontroller, "ctrlStickY", json_integer(pad_data.pad[i]->stickY));
-            json_object_set_new_nocheck(gccontroller, "cStickX", json_integer(pad_data.pad[i]->substickX));
-            json_object_set_new_nocheck(gccontroller, "cStickY", json_integer(pad_data.pad[i]->substickY));
-            json_object_set_new_nocheck(gccontroller, "lTrigger", json_integer(pad_data.pad[i]->triggerL));
-            json_object_set_new_nocheck(gccontroller, "rTrigger", json_integer(pad_data.pad[i]->triggerR));
-            json_array_append(gccontrollers, gccontroller);
+            writer.StartObject(); // Start gameCubeController object
+            writer.Key("order");
+            writer.Uint(i + 1);
+            writer.Key("hold");
+            writer.Uint(pad_data.pad[i]->button);
+            writer.Key("ctrlStickX");
+            writer.Int(pad_data.pad[i]->stickX);
+            writer.Key("ctrlStickY");
+            writer.Int(pad_data.pad[i]->stickY);
+            writer.Key("cStickX");
+            writer.Int(pad_data.pad[i]->substickX);
+            writer.Key("cStickY");
+            writer.Int(pad_data.pad[i]->substickY);
+            writer.Key("lTrigger");
+            writer.Int(pad_data.pad[i]->triggerL);
+            writer.Key("rTrigger");
+            writer.Int(pad_data.pad[i]->triggerR);
+            writer.EndObject(); // End gameCubeController object
         }
+        writer.EndArray();
     }
 
-    // Convert to string
-    char* s = json_dumps(root, JSON_COMPACT | JSON_REAL_PRECISION(10));
-    out = s;
-    free(s);
+    writer.EndObject(); // End root object
 
-    json_decref(root);
+    // Convert to string
+    return sb.GetString();
 }

@@ -345,11 +345,8 @@ appscreen Application::screenSendInput() {
         holdTime = 0;
     }
 
-    // The string sent to the computer
-    std::string msg_data;
-
     // Transform to JSON
-    pad_to_json(pad_data, msg_data);
+    auto msg_data = pad_to_json(pad_data);
 
     // Send the message
     udp_print(msg_data.c_str());

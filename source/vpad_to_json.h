@@ -12,4 +12,4 @@ typedef struct {
     PADStatus* pad[PAD_CHANMAX]; /**< GameCube Controller. */
 } PADData;
 
-void pad_to_json(PADData pad_data, std::string& out);
+std::string pad_to_json(PADData pad_data);
