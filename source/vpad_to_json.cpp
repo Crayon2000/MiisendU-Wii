@@ -110,7 +110,7 @@ static const std::map nunchukmask = {
  * @param[in] pad_data Controllers data.
  * @return The JSON string.
  */
-std::string pad_to_json(PADData pad_data)
+std::string pad_to_json(const PADData& pad_data)
 {
     rapidjson::StringBuffer sb;
     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
