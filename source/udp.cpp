@@ -1,11 +1,9 @@
 #include "udp.h"
+#include <algorithm>
+#include <chrono>
+#include <thread>
+#include <cstring>
 #include <network.h>
-#include <stdarg.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
-#include <unistd.h>
 
 /* A ripoff of logger.c */
 
@@ -26,7 +24,7 @@ void udp_init(std::string_view ipString, unsigned short ipport)
     connect_addr.sin_port = ipport;
     inet_aton(ipString.data(), &connect_addr.sin_addr);
 
-    if(net_connect(udp_socket, (struct sockaddr*)&connect_addr, sizeof(connect_addr)) < 0)
+    if(net_connect(udp_socket, reinterpret_cast<struct sockaddr*>(&connect_addr), sizeof(connect_addr)) < 0)
     {
         net_close(udp_socket);
         udp_socket = -1;
@@ -50,7 +48,7 @@ void udp_print(const char *str)
     }
 
     while(udp_lock) {
-        usleep(1000);
+        std::this_thread::sleep_for(std::chrono::microseconds(1000));
     }
     udp_lock = 1;
 
