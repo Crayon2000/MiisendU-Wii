@@ -240,7 +240,7 @@ appscreen Application::screenIpSelection() {
         msg_connected = fmt::format("Connected to {}:{}", IP_ADDRESS, Port);
 
         // Initialize the UDP connection
-        udp_init(IP_ADDRESS.c_str(), Port);
+        udp_init(IP_ADDRESS, Port);
 
         return appscreen::sendinput;
     }
