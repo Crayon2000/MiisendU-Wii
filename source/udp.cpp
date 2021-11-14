@@ -56,8 +56,8 @@ void udp_print(const char *str)
 
     int len = strlen(str);
     while (len > 0) {
-        int block = len < 1400 ? len : 1400; // take max 1400 bytes per UDP packet
-        int ret = net_send(udp_socket, str, block, 0);
+        const auto block = std::min(len, 1400); // take max 1400 bytes per UDP packet
+        const auto ret = net_send(udp_socket, str, block, 0);
         if(ret < 0) {
             break;
         }
