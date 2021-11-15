@@ -1,11 +1,9 @@
 #include "udp.h"
+#include <algorithm>
+#include <chrono>
+#include <thread>
+#include <cstring>
 #include <network.h>
-#include <stdarg.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
-#include <unistd.h>
 
 /* A ripoff of logger.c */
 
@@ -13,7 +11,7 @@ static int udp_socket = -1;
 static volatile int udp_lock = 0;
 
 
-void udp_init(const char * ipString, unsigned short ipport)
+void udp_init(std::string_view ipString, unsigned short ipport)
 {
     udp_socket = net_socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
     if (udp_socket < 0) {
@@ -24,9 +22,9 @@ void udp_init(const char * ipString, unsigned short ipport)
     memset(&connect_addr, 0, sizeof(connect_addr));
     connect_addr.sin_family = AF_INET;
     connect_addr.sin_port = ipport;
-    inet_aton(ipString, &connect_addr.sin_addr);
+    inet_aton(ipString.data(), &connect_addr.sin_addr);
 
-    if(net_connect(udp_socket, (struct sockaddr*)&connect_addr, sizeof(connect_addr)) < 0)
+    if(net_connect(udp_socket, reinterpret_cast<struct sockaddr*>(&connect_addr), sizeof(connect_addr)) < 0)
     {
         net_close(udp_socket);
         udp_socket = -1;
@@ -50,14 +48,14 @@ void udp_print(const char *str)
     }
 
     while(udp_lock) {
-        usleep(1000);
+        std::this_thread::sleep_for(std::chrono::microseconds(1000));
     }
     udp_lock = 1;
 
     int len = strlen(str);
     while (len > 0) {
-        int block = len < 1400 ? len : 1400; // take max 1400 bytes per UDP packet
-        int ret = net_send(udp_socket, str, block, 0);
+        const auto block = std::min(len, 1400); // take max 1400 bytes per UDP packet
+        const auto ret = net_send(udp_socket, str, block, 0);
         if(ret < 0) {
             break;
         }

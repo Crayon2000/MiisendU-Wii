@@ -28,3 +28,13 @@ cd build
 /opt/devkitpro/devkitPPC/bin/powerpc-eabi-cmake -DCMAKE_INSTALL_PREFIX=/opt/devkitpro/portlibs/ppc ..
 make install
 rm -rf /tmp/inipp-*
+
+# Install RapidJSON
+wget https://github.com/Tencent/rapidjson/archive/refs/heads/master.tar.gz -O - | tar -xz --verbose --directory=/tmp/
+cd /tmp/rapidjson-*
+mkdir build
+cd build
+/opt/devkitpro/devkitPPC/bin/powerpc-eabi-cmake -DCMAKE_INSTALL_PREFIX=/opt/devkitpro/portlibs/ppc -DCMAKE_BUILD_TYPE=Release \
+    -D_CMAKE_INSTALL_DIR=/. -DRAPIDJSON_BUILD_DOC=OFF -DRAPIDJSON_BUILD_EXAMPLES=OFF -DRAPIDJSON_BUILD_TESTS=OFF -DRAPIDJSON_BUILD_CXX11=OFF -DRAPIDJSON_BUILD_CXX17=ON ..
+make install
+rm -rf /tmp/rapidjson-*
