@@ -12,7 +12,7 @@ enum class appscreen : uint8_t {
     sendinput
 };
 
-typedef struct GRRLIB_Font GRRLIB_ttfFont;
+struct GRRLIB_texImg;
 
 class Application {
     public:
@@ -31,7 +31,7 @@ class Application {
         appscreen screenSendInput();
 
     private:
-        GRRLIB_ttfFont *ttf_font;
+        GRRLIB_texImg *img_font;
         appscreen screenId;
 
         // Sreen IP Selection
