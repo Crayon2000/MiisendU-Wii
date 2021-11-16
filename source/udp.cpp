@@ -5,8 +5,6 @@
 #include <cstring>
 #include <network.h>
 
-/* A ripoff of logger.c */
-
 static int udp_socket = -1;
 static volatile int udp_lock = 0;
 
@@ -47,7 +45,7 @@ void udp_print(const char *str)
         return;
     }
 
-    while(udp_lock) {
+    while(udp_lock != 0) {
         std::this_thread::sleep_for(std::chrono::microseconds(1000));
     }
     udp_lock = 1;

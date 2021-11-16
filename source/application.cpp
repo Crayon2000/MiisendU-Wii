@@ -10,7 +10,7 @@
 #include <wiiuse/wpad.h>
 #include <ogc/pad.h>
 #include <network.h>
-#include "OxygenMono-Regular_ttf.h"
+#include "Oxygen_Mono_10_png.h"
 
 /**
  * Callbacks will set this to true if called.
@@ -67,6 +67,7 @@ static int8_t inet_pton(std::string_view addrString, void *addrBuf) {
  */
 Application::Application() :
     screenId(appscreen::initapp),
+    selected_digit(0),
     Port(4242),
     holdTime(0)
 {
@@ -81,10 +82,10 @@ Application::Application() :
     SYS_SetResetCallback(WiiResetPressed);
     SYS_SetPowerCallback(WiiPowerPressed);
 
-    ttf_font = GRRLIB_LoadTTF(OxygenMono_Regular_ttf, OxygenMono_Regular_ttf_size);
+    img_font = GRRLIB_LoadTexture(Oxygen_Mono_10_png);
+    GRRLIB_InitTileSet(img_font, 8, 20, 32);
 
     IP = {192, 168, 1, 100};
-    selected_digit = 0;
 }
 
 /**
@@ -92,7 +93,7 @@ Application::Application() :
  */
 Application::~Application()
 {
-    GRRLIB_FreeTTF(ttf_font);
+    GRRLIB_FreeTexture(img_font);
     WPAD_Shutdown();
     net_deinit();
     GRRLIB_Exit(); // Be a good boy, clear the memory allocated by GRRLIB
@@ -104,7 +105,7 @@ Application::~Application()
  */
 bool Application::Run()
 {
-    bool returnvalue = true;
+    auto returnvalue = true;
     WPAD_ScanPads(); // Scan the Wii remotes
     //PAD_ScanPads(); // Scan the GC Controller
 
@@ -143,7 +144,7 @@ bool Application::Run()
  * @param path The path to set.
  */
 void Application::SetPath(std::string_view path) {
-    auto const pos = path.find_last_of('/');
+    const auto pos = path.find_last_of('/');
     std::string_view tmp = path.substr(0, pos + 1);
     if(tmp.empty() == false) {
         pathini = fmt::format("{}settings.ini", tmp);
@@ -159,10 +160,10 @@ void Application::printHeader() {
     constexpr char logo3[] = R"(| |\/| | | (_-</ -_) ' \/ _` | |_| |  \ \/\/ /| | |)";
     constexpr char logo4[] = R"(|_|  |_|_|_/__/\___|_||_\__,_|\___/    \_/\_/ |_|_| v0.0.1)";
 
-    GRRLIB_PrintfTTF(10, 10 + (15 * 1), ttf_font, logo1, 13, 0xFFFFFFFF);
-    GRRLIB_PrintfTTF(10, 10 + (15 * 2), ttf_font, logo2, 13, 0xFFFFFFFF);
-    GRRLIB_PrintfTTF(10, 10 + (15 * 3), ttf_font, logo3, 13, 0xFFFFFFFF);
-    GRRLIB_PrintfTTF(10, 10 + (15 * 4), ttf_font, logo4, 13, 0xFFFFFFFF);
+    GRRLIB_Printf(10, 10 + (15 * 1), img_font, 0xFFFFFFFF, 1, logo1);
+    GRRLIB_Printf(10, 10 + (15 * 2), img_font, 0xFFFFFFFF, 1, logo2);
+    GRRLIB_Printf(10, 10 + (15 * 3), img_font, 0xFFFFFFFF, 1, logo3);
+    GRRLIB_Printf(10, 10 + (15 * 4), img_font, 0xFFFFFFFF, 1, logo4);
 }
 
 /**
@@ -170,11 +171,18 @@ void Application::printHeader() {
  * @return Returns the appscreen to use next.
  */
 appscreen Application::screenInit() {
+    static uint8_t print_count = 1;
+
     // Print loading screen
     GRRLIB_FillScreen(0x000000FF);
     printHeader();
-    GRRLIB_PrintfTTF(10, 100 + (15 * 5), ttf_font, "Initializing...", 13, 0xFFFFFFFF);
+    GRRLIB_Printf(10, 100 + (15 * 5), img_font, 0xFFFFFFFF, 1, "Initializing...");
     GRRLIB_Render();
+
+    if(print_count++ < 2) {
+        // Make sure both frame buffers are filled
+        return appscreen::initapp;
+    }
 
     // Init network
     s32 net_result = -1;
@@ -190,7 +198,7 @@ appscreen Application::screenInit() {
             }
 
             printHeader();
-            GRRLIB_PrintfTTF(10, 100 + (15 * 5), ttf_font, "Network initialization failed, retrying...", 13, 0xFFFFFFFF);
+            GRRLIB_Printf(10, 100 + (15 * 5), img_font, 0xFFFFFFFF, 1, "Network initialization failed, retrying...");
             GRRLIB_Render();
         }
     }
@@ -260,22 +268,22 @@ appscreen Application::screenIpSelection() {
 
     printHeader();
 
-    GRRLIB_PrintfTTF(10, 100 + (15 * 5), ttf_font,
-        "Please insert your computer's IP address below", 13, 0xFFFFFFFF);
-    GRRLIB_PrintfTTF(10, 100 + (15 * 6), ttf_font,
-        "(use the DPAD to edit the IP address)", 13, 0xFFFFFFFF);
+    GRRLIB_Printf(10, 100 + (15 * 5), img_font, 0xFFFFFFFF, 1,
+        "Please insert your computer's IP address below");
+    GRRLIB_Printf(10, 100 + (15 * 6), img_font, 0xFFFFFFFF, 1,
+        "(use the DPAD to edit the IP address)");
 
-    GRRLIB_PrintfTTF(10 + (4 * 8 * selected_digit), 100 + (15 * 8), ttf_font,
-        "vvv", 13, 0xFFFFFFFF);
+    GRRLIB_Printf(10 + (4 * 8 * selected_digit), 100 + (15 * 8), img_font, 0xFFFFFFFF, 1,
+        "vvv");
 
     const std::string IP_str = fmt::format("{:3d}.{:3d}.{:3d}.{:3d}", IP[0], IP[1], IP[2], IP[3]);
-    GRRLIB_PrintfTTF(10, 100 + (15 * 9), ttf_font,
-        IP_str.c_str(), 13, 0xFFFFFFFF);
+    GRRLIB_Printf(10, 100 + (15 * 9), img_font, 0xFFFFFFFF, 1,
+        IP_str.c_str());
 
-    GRRLIB_PrintfTTF(10, 100 + (15 * 15), ttf_font,
-        "Press 'A' to confirm", 13, 0xFFFFFFFF);
-    GRRLIB_PrintfTTF(10, 100 + (15 * 16), ttf_font,
-        "Press the HOME button to exit", 13, 0xFFFFFFFF);
+    GRRLIB_Printf(10, 100 + (15 * 15), img_font, 0xFFFFFFFF, 1,
+        "Press 'A' to confirm");
+    GRRLIB_Printf(10, 100 + (15 * 16), img_font, 0xFFFFFFFF, 1,
+        "Press the HOME button to exit");
 
     // Stay on this screen
     return appscreen::ipselection;
@@ -296,16 +304,16 @@ appscreen Application::screenSendInput() {
 
     PADData pad_data;
     memset(&pad_data, 0, sizeof(PADData));
-    if(wpad_data0->err == WPAD_ERR_NONE) {
+    if(wpad_data0->err == WPAD_ERR_NONE && wpad_data0->data_present > 0) {
         pad_data.wpad[WPAD_CHAN_0] = wpad_data0;
     }
-    if(wpad_data1->err == WPAD_ERR_NONE) {
+    if(wpad_data1->err == WPAD_ERR_NONE && wpad_data1->data_present > 0) {
         pad_data.wpad[WPAD_CHAN_1] = wpad_data1;
     }
-    if(wpad_data2->err == WPAD_ERR_NONE) {
+    if(wpad_data2->err == WPAD_ERR_NONE && wpad_data2->data_present > 0) {
         pad_data.wpad[WPAD_CHAN_2] = wpad_data2;
     }
-    if(wpad_data3->err == WPAD_ERR_NONE) {
+    if(wpad_data3->err == WPAD_ERR_NONE && wpad_data3->data_present > 0) {
         pad_data.wpad[WPAD_CHAN_3] = wpad_data3;
     }
     if(padstatus[PAD_CHAN0].err == PAD_ERR_NONE) {
@@ -353,16 +361,16 @@ appscreen Application::screenSendInput() {
 
     printHeader();
 
-    GRRLIB_PrintfTTF(10, 100 + (15 * 5), ttf_font,
-        msg_connected.c_str(), 13, 0xFFFFFFFF);
-    GRRLIB_PrintfTTF(10, 100 + (15 * 7), ttf_font,
-        "Remember the program will not work without", 13, 0xFFFFFFFF);
-    GRRLIB_PrintfTTF(10, 100 + (15 * 8), ttf_font,
-        "UsendMii running on your computer.", 13, 0xFFFFFFFF);
-    GRRLIB_PrintfTTF(10, 100 + (15 * 9), ttf_font,
-        "You can get UsendMii from http://wiiubrew.org/wiki/UsendMii", 13, 0xFFFFFFFF);
-    GRRLIB_PrintfTTF(10, 100 + (15 * 16), ttf_font,
-        "Hold the HOME button to exit.", 13, 0xFFFFFFFF);
+    GRRLIB_Printf(10, 100 + (15 * 5), img_font, 0xFFFFFFFF, 1,
+        msg_connected.c_str());
+    GRRLIB_Printf(10, 100 + (15 * 7), img_font, 0xFFFFFFFF, 1,
+        "Remember the program will not work without");
+    GRRLIB_Printf(10, 100 + (15 * 8), img_font, 0xFFFFFFFF, 1,
+        "UsendMii running on your computer.");
+    GRRLIB_Printf(10, 100 + (15 * 9), img_font, 0xFFFFFFFF, 1,
+        "You can get UsendMii from http://wiiubrew.org/wiki/UsendMii");
+    GRRLIB_Printf(10, 100 + (15 * 16), img_font, 0xFFFFFFFF, 1,
+        "Hold the HOME button to exit.");
 
     // Stay on this screen
     return appscreen::sendinput;
