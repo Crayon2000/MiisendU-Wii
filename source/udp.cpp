@@ -5,8 +5,6 @@
 #include <cstring>
 #include <network.h>
 
-/* A ripoff of logger.c */
-
 static int udp_socket = -1;
 static volatile int udp_lock = 0;
 

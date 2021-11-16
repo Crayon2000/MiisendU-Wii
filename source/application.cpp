@@ -171,11 +171,18 @@ void Application::printHeader() {
  * @return Returns the appscreen to use next.
  */
 appscreen Application::screenInit() {
+    static uint8_t print_count = 1;
+
     // Print loading screen
     GRRLIB_FillScreen(0x000000FF);
     printHeader();
     GRRLIB_Printf(10, 100 + (15 * 5), img_font, 0xFFFFFFFF, 1, "Initializing...");
     GRRLIB_Render();
+
+    if(print_count++ < 2) {
+        // Make sure both frame buffers are filled
+        return appscreen::initapp;
+    }
 
     // Init network
     s32 net_result = -1;
