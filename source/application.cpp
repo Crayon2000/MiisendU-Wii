@@ -67,9 +67,9 @@ static int8_t inet_pton(std::string_view addrString, void *addrBuf) {
  */
 Application::Application() :
     screenId(appscreen::initapp),
+    selected_digit(0),
     Port(4242),
-    holdTime(0),
-    selected_digit(0)
+    holdTime(0)
 {
     // Initialise the Graphics & Video subsystem
     GRRLIB_Init();
@@ -105,7 +105,7 @@ Application::~Application()
  */
 bool Application::Run()
 {
-    bool returnvalue = true;
+    auto returnvalue = true;
     WPAD_ScanPads(); // Scan the Wii remotes
     //PAD_ScanPads(); // Scan the GC Controller
 
@@ -144,7 +144,7 @@ bool Application::Run()
  * @param path The path to set.
  */
 void Application::SetPath(std::string_view path) {
-    auto const pos = path.find_last_of('/');
+    const auto pos = path.find_last_of('/');
     std::string_view tmp = path.substr(0, pos + 1);
     if(tmp.empty() == false) {
         pathini = fmt::format("{}settings.ini", tmp);
@@ -297,16 +297,16 @@ appscreen Application::screenSendInput() {
 
     PADData pad_data;
     memset(&pad_data, 0, sizeof(PADData));
-    if(wpad_data0->err == WPAD_ERR_NONE) {
+    if(wpad_data0->err == WPAD_ERR_NONE && wpad_data0->data_present > 0) {
         pad_data.wpad[WPAD_CHAN_0] = wpad_data0;
     }
-    if(wpad_data1->err == WPAD_ERR_NONE) {
+    if(wpad_data1->err == WPAD_ERR_NONE && wpad_data1->data_present > 0) {
         pad_data.wpad[WPAD_CHAN_1] = wpad_data1;
     }
-    if(wpad_data2->err == WPAD_ERR_NONE) {
+    if(wpad_data2->err == WPAD_ERR_NONE && wpad_data2->data_present > 0) {
         pad_data.wpad[WPAD_CHAN_2] = wpad_data2;
     }
-    if(wpad_data3->err == WPAD_ERR_NONE) {
+    if(wpad_data3->err == WPAD_ERR_NONE && wpad_data3->data_present > 0) {
         pad_data.wpad[WPAD_CHAN_3] = wpad_data3;
     }
     if(padstatus[PAD_CHAN0].err == PAD_ERR_NONE) {

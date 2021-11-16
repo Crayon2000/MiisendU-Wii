@@ -47,7 +47,7 @@ void udp_print(const char *str)
         return;
     }
 
-    while(udp_lock) {
+    while(udp_lock != 0) {
         std::this_thread::sleep_for(std::chrono::microseconds(1000));
     }
     udp_lock = 1;
