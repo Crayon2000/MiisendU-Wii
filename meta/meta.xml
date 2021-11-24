@@ -3,7 +3,7 @@
     <name>MiisendU Wii</name>
     <coder>Crayon</coder>
     <version>0.0.1</version>
-    <release_date>20211024000000</release_date>
+    <release_date>20211123000000</release_date>
     <short_description>A UsendMii client for Wii</short_description> 
     <long_description>This application is a UsendMii client for Wii. It requires UsendMii to run on your PC.</long_description>
 </app>
