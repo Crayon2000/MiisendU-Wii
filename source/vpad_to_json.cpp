@@ -1,6 +1,6 @@
+#include "vpad_to_json.h"
 #include <map>
 #include "rapidjson/writer.h"
-#include "vpad_to_json.h"
 
 /**
  * Mask for the Wii Remote.
@@ -61,7 +61,7 @@ static const std::map nunchukmask = {
     float angle = degree - static_cast<int>((degree * (1.0f / 360.0f))) * 360.0f;
     if(angle < 0.0f)
     {
-      angle += 360.0f;
+        angle += 360.0f;
     }
     return angle;
 }
@@ -80,9 +80,9 @@ static const std::map nunchukmask = {
     return (AAngle < AAngle2);
 }
 
-[[nodiscard]] static constexpr int analogStickToDPad(float angle, int left, int right, int down, int up)
+[[nodiscard]] static constexpr u32 analogStickToDPad(float angle, u32 left, u32 right, u32 down, u32 up)
 {
-    int result = 0;
+    u32 result = 0;
     const auto norm_angle = normalize(angle);
     constexpr float xy_deg = 60.0f; // Ranges for regarding input as left/right/up/down
     constexpr float deg_val = (360.0f - (4.0f * xy_deg)) / 4.0f + xy_deg / 2.0f;
