@@ -12,7 +12,7 @@ wget https://github.com/GRRLIB/GRRLIB/archive/refs/heads/master.tar.gz -O - | ta
 rm -rf /tmp/GRRLIB-*
 
 # Install fmt library
-wget https://github.com/fmtlib/fmt/archive/refs/tags/9.0.0.tar.gz -O - | tar -xz --verbose --directory=/tmp/
+wget https://github.com/fmtlib/fmt/archive/refs/tags/10.0.0.tar.gz -O - | tar -xz --verbose --directory=/tmp/
 cd /tmp/fmt*
 mkdir build
 cd build
