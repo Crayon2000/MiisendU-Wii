@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-- TBD.
+- Remove code for emulated buttons.
 
 ## 0.0.1 - 2021-11-23
 

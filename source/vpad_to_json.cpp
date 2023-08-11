@@ -52,60 +52,6 @@ static const std::map nunchukmask = {
 }
 
 /**
- * Normalize.
- * @param degree An angle in degree.
- * @return Returns the normalized angle.
- */
-[[nodiscard]] static constexpr auto normalize(float degree)
-{
-    float angle = degree - static_cast<int>((degree * (1.0f / 360.0f))) * 360.0f;
-    if(angle < 0.0f)
-    {
-        angle += 360.0f;
-    }
-    return angle;
-}
-
-/**
- * Check if an angle is between two angles of a circle.
- * @param AAngle Angle.
- * @param AAngle1 Angle 1.
- * @param AAngle12 Angle 2.
- * @return Returns true if AAngle is between AAngle1 and AAngle2, false otherwise.
- */
-[[nodiscard]] static constexpr bool isWithinRange(float AAngle, float AAngle1, float AAngle2)
-{
-    AAngle2 = (AAngle2 - AAngle1) < 0.0f ? AAngle2 - AAngle1 + 360.0f : AAngle2 - AAngle1;
-    AAngle = (AAngle - AAngle1) < 0.0f ? AAngle - AAngle1 + 360.0f : AAngle - AAngle1;
-    return (AAngle < AAngle2);
-}
-
-[[nodiscard]] static constexpr u32 analogStickToDPad(float angle, u32 left, u32 right, u32 down, u32 up)
-{
-    u32 result = 0;
-    const auto norm_angle = normalize(angle);
-    constexpr float xy_deg = 60.0f; // Ranges for regarding input as left/right/up/down
-    constexpr float deg_val = (360.0f - (4.0f * xy_deg)) / 4.0f + xy_deg / 2.0f;
-    if(isWithinRange(norm_angle, 270.0f - deg_val, 270.0f + deg_val) == true)
-    {
-        result |= left; // Stick emulated left
-    }
-    else if(isWithinRange(norm_angle, 90.0f - deg_val, 90.0f + deg_val) == true)
-    {
-        result |= right; // Stick emulated right
-    }
-    if(isWithinRange(norm_angle, 360.0f - deg_val, 0.0f + deg_val) == true)
-    {
-        result |= up; // Stick emulated up
-    }
-    else if(isWithinRange(norm_angle, 180.0f - deg_val, 180.0f + deg_val) == true)
-    {
-        result |= down; // Stick emulated down
-    }
-    return result;
-}
-
-/**
  * Convert GamePad data to JSON string used by UsendMii.
  * @param[in] pad_data Controllers data.
  * @return The JSON string.
@@ -171,10 +117,6 @@ std::string pad_to_json(const PADData& pad_data)
                         auto js = pad_data.wpad[i]->exp.nunchuk.js;
                         auto x = getStickValue(js.pos.x, js.min.x, js.max.x, js.center.x);
                         auto y = getStickValue(js.pos.y, js.min.y, js.max.y, js.center.y);
-                        if(js.mag > 0.2f)
-                        {   // Not in dead-zone
-                            holdnunchuk |= analogStickToDPad(js.ang, 0x0001, 0x0002, 0x0004, 0x0008);
-                        }
 
                         writer.Key("extension");
                         writer.StartObject(); // Start extension object
@@ -196,18 +138,10 @@ std::string pad_to_json(const PADData& pad_data)
                         auto ljs = pad_data.wpad[i]->exp.classic.ljs;
                         auto lx = getStickValue(ljs.pos.x, ljs.min.x, ljs.max.x, ljs.center.x);
                         auto ly = getStickValue(ljs.pos.y, ljs.min.y, ljs.max.y, ljs.center.y);
-                        if(ljs.mag > 0.2f)
-                        {   // Not in dead-zone
-                            holdclassic |= analogStickToDPad(ljs.ang, 0x00010000, 0x00020000, 0x00040000, 0x00080000);
-                        }
 
                         auto rjs = pad_data.wpad[i]->exp.classic.rjs;
                         auto rx = getStickValue(rjs.pos.x, rjs.min.x, rjs.max.x, rjs.center.x);
                         auto ry = getStickValue(rjs.pos.y, rjs.min.y, rjs.max.y, rjs.center.y);
-                        if(rjs.mag > 0.2f)
-                        {   // Not in dead-zone
-                            holdclassic |= analogStickToDPad(rjs.ang, 0x00100000, 0x00200000, 0x00400000, 0x00800000);
-                        }
 
                         writer.Key("extension");
                         writer.StartObject(); // Start extension object
