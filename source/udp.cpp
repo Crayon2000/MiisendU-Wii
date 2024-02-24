@@ -1,12 +1,11 @@
 #include "udp.h"
 #include <algorithm>
-#include <chrono>
-#include <thread>
 #include <cstring>
+#include <mutex>
 #include <network.h>
 
 static int udp_socket = -1;
-static volatile int udp_lock = 0;
+std::mutex udp_mutex;
 
 
 void udp_init(std::string_view ipString, unsigned short ipport)
@@ -45,12 +44,9 @@ void udp_print(const char *str)
         return;
     }
 
-    while(udp_lock != 0) {
-        std::this_thread::sleep_for(std::chrono::microseconds(1000));
-    }
-    udp_lock = 1;
+    const std::lock_guard<std::mutex> lock(udp_mutex);
 
-    int len = strlen(str);
+    int len = std::strlen(str);
     while (len > 0) {
         const auto block = std::min(len, 1400); // take max 1400 bytes per UDP packet
         const auto ret = net_send(udp_socket, str, block, 0);
@@ -61,6 +57,4 @@ void udp_print(const char *str)
         len -= ret;
         str += ret;
     }
-
-    udp_lock = 0;
 }
