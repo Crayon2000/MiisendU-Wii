@@ -42,5 +42,7 @@ class Application {
         std::string msg_connected;
         uint16_t holdTime;
         std::string pathini;
+        uint32_t wait_time_horizontal;
+        uint32_t wait_time_vertical;
 };
 //---------------------------------------------------------------------------
