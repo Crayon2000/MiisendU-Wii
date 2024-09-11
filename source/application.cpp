@@ -243,7 +243,7 @@ appscreen Application::screenInit() {
  * @return Returns the appscreen to use next.
  */
 appscreen Application::screenIpSelection() {
-    // If [HOME] was pressed on the first Wiimote, break out of the loop
+    // If [HOME] was pressed on the first Wii Remote, break out of the loop
     if (WPAD_ButtonsDown(WPAD_CHAN_0) & WPAD_BUTTON_HOME) {
         return appscreen::exitapp;
     }

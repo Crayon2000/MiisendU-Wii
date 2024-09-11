@@ -9,7 +9,7 @@ static int udp_socket = -1;
 static volatile int udp_lock = 0;
 
 
-void udp_init(std::string_view ipString, unsigned short ipport)
+void udp_init(std::string_view ipString, uint16_t ipport)
 {
     udp_socket = net_socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
     if (udp_socket < 0) {
