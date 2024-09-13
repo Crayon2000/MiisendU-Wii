@@ -89,7 +89,7 @@ Application::Application() :
     SYS_SetResetCallback(WiiResetPressed);
     SYS_SetPowerCallback(WiiPowerPressed);
 
-    img_font = GRRLIB_LoadTexture(Oxygen_Mono_10_png);
+    img_font = GRRLIB_LoadTexturePNG(Oxygen_Mono_10_png);
     GRRLIB_InitTileSet(img_font, 8, 20, 32);
 
     IP = {192, 168, 1, 100};

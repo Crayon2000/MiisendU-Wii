@@ -17,7 +17,7 @@ cd /tmp/fmt*
 mkdir build
 cd build
 /opt/devkitpro/devkitPPC/bin/powerpc-eabi-cmake -DFMT_TEST=0 -DCMAKE_INSTALL_PREFIX=/opt/devkitpro/portlibs/ppc ..
-make install
+cmake --build . --target install
 rm -rf /tmp/fmt-*
 
 # Install IniPP library
@@ -26,7 +26,7 @@ cd /tmp/inipp-*
 mkdir build
 cd build
 /opt/devkitpro/devkitPPC/bin/powerpc-eabi-cmake -DCMAKE_INSTALL_PREFIX=/opt/devkitpro/portlibs/ppc ..
-make install
+cmake --build . --target install
 rm -rf /tmp/inipp-*
 
 # Install RapidJSON
@@ -36,5 +36,5 @@ mkdir build
 cd build
 /opt/devkitpro/devkitPPC/bin/powerpc-eabi-cmake -DCMAKE_INSTALL_PREFIX=/opt/devkitpro/portlibs/ppc -DCMAKE_BUILD_TYPE=Release \
     -DRAPIDJSON_BUILD_DOC=OFF -DRAPIDJSON_BUILD_EXAMPLES=OFF -DRAPIDJSON_BUILD_TESTS=OFF -DRAPIDJSON_BUILD_CXX11=OFF -DRAPIDJSON_BUILD_CXX17=ON ..
-make install
+cmake --build . --target install
 rm -rf /tmp/rapidjson-*
