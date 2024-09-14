@@ -15,5 +15,7 @@ To compile:
 
 ```bash
 sh .devcontainer/install-dependencies.sh
-make
+mkdir --parents build && cd build
+/opt/devkitpro/portlibs/wii/bin/powerpc-eabi-cmake ..
+cmake --build .
 ```
