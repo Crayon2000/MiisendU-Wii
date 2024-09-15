@@ -18,6 +18,11 @@
 static bool exitApp = false;
 
 /**
+ * Wait time in frames.
+ */
+static constexpr uint8_t wait_time = 14;
+
+/**
  * Callback for the reset button on the Wii.
  */
 static void WiiResetPressed(uint32_t irq, void* ctx)
@@ -69,7 +74,9 @@ Application::Application() :
     screenId(appscreen::initapp),
     selected_digit(0),
     Port(4242),
-    holdTime(0)
+    holdTime(0),
+    wait_time_horizontal(0),
+    wait_time_vertical(0)
 {
     // Initialise the Graphics & Video subsystem
     GRRLIB_Init();
@@ -82,7 +89,7 @@ Application::Application() :
     SYS_SetResetCallback(WiiResetPressed);
     SYS_SetPowerCallback(WiiPowerPressed);
 
-    img_font = GRRLIB_LoadTexture(Oxygen_Mono_10_png);
+    img_font = GRRLIB_LoadTexturePNG(Oxygen_Mono_10_png);
     GRRLIB_InitTileSet(img_font, 8, 20, 32);
 
     IP = {192, 168, 1, 100};
@@ -236,7 +243,7 @@ appscreen Application::screenInit() {
  * @return Returns the appscreen to use next.
  */
 appscreen Application::screenIpSelection() {
-    // If [HOME] was pressed on the first Wiimote, break out of the loop
+    // If [HOME] was pressed on the first Wii Remote, break out of the loop
     if (WPAD_ButtonsDown(WPAD_CHAN_0) & WPAD_BUTTON_HOME) {
         return appscreen::exitapp;
     }
@@ -253,17 +260,29 @@ appscreen Application::screenIpSelection() {
         return appscreen::sendinput;
     }
 
-    if (WPAD_ButtonsDown(WPAD_CHAN_0) & WPAD_BUTTON_LEFT  && selected_digit > 0) {
-        selected_digit--;
+    if (WPAD_ButtonsHeld(WPAD_CHAN_0) & WPAD_BUTTON_LEFT  && selected_digit > 0) {
+        if (WPAD_ButtonsDown(WPAD_CHAN_0) & WPAD_BUTTON_LEFT || wait_time_horizontal++ > wait_time) {
+            selected_digit--;
+            wait_time_horizontal = 0;
+        }
     }
-    if (WPAD_ButtonsDown(WPAD_CHAN_0) & WPAD_BUTTON_RIGHT && selected_digit < 3) {
-        selected_digit++;
+    if (WPAD_ButtonsHeld(WPAD_CHAN_0) & WPAD_BUTTON_RIGHT && selected_digit < 3) {
+        if (WPAD_ButtonsDown(WPAD_CHAN_0) & WPAD_BUTTON_RIGHT || wait_time_horizontal++ > wait_time) {
+            selected_digit++;
+            wait_time_horizontal = 0;
+        }
     }
-    if (WPAD_ButtonsDown(WPAD_CHAN_0) & WPAD_BUTTON_UP) {
-        IP[selected_digit] = (IP[selected_digit] < 255) ? (IP[selected_digit] + 1) : 0;
+    if (WPAD_ButtonsHeld(WPAD_CHAN_0) & WPAD_BUTTON_UP) {
+        if (WPAD_ButtonsDown(WPAD_CHAN_0) & WPAD_BUTTON_UP || wait_time_vertical++ > wait_time) {
+            IP[selected_digit] = (IP[selected_digit] < 255) ? (IP[selected_digit] + 1) : 0;
+            wait_time_vertical = 0;
+        }
     }
-    if (WPAD_ButtonsDown(WPAD_CHAN_0) & WPAD_BUTTON_DOWN) {
-        IP[selected_digit] = (IP[selected_digit] >   0) ? (IP[selected_digit] - 1) : 255;
+    if (WPAD_ButtonsHeld(WPAD_CHAN_0) & WPAD_BUTTON_DOWN) {
+        if (WPAD_ButtonsDown(WPAD_CHAN_0) & WPAD_BUTTON_DOWN || wait_time_vertical++ > wait_time) {
+            IP[selected_digit] = (IP[selected_digit] >   0) ? (IP[selected_digit] - 1) : 255;
+            wait_time_vertical = 0;
+        }
     }
 
     printHeader();

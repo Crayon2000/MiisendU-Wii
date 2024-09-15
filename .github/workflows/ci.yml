@@ -18,12 +18,13 @@ jobs:
     - name: Build application
       run: |
         sh .devcontainer/install-dependencies.sh
-        make build
+        /opt/devkitpro/portlibs/wii/bin/powerpc-eabi-cmake -B $GITHUB_WORKSPACE/build -G Ninja
+        cmake --build $GITHUB_WORKSPACE/build --verbose
 
     - name: Prepare artifact
       run: |
         mkdir --parents artifact/MiisendU-Wii
-        mv --verbose MiisendU-Wii.dol artifact/MiisendU-Wii/boot.dol
+        mv --verbose build/MiisendU-Wii.dol artifact/MiisendU-Wii/boot.dol
         cp --verbose meta/* artifact/MiisendU-Wii
 
     - uses: actions/upload-artifact@v4
