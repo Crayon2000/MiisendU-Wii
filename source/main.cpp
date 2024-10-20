@@ -12,5 +12,5 @@ int main(int argc, char *argv[]) {
         app->SetPath(argv[0]);
     }
     while(app->Run()) {}
-    exit(0); // Exit the program
+    std::exit(0); // Exit the program
 }

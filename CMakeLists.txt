@@ -35,7 +35,11 @@ target_compile_features(MiisendU-Wii PRIVATE cxx_std_20)
 target_compile_options(MiisendU-Wii PRIVATE
   -Werror
   -Wall
+  -Wextra
+  -Wshadow
   -Wunused
+  -Wpedantic
+  -Wnull-dereference
   -Wmisleading-indentation
   -Wduplicated-cond
   -Wduplicated-branches

@@ -25,7 +25,7 @@ static constexpr uint8_t wait_time = 14;
 /**
  * Callback for the reset button on the Wii.
  */
-static void WiiResetPressed(uint32_t irq, void* ctx)
+static void WiiResetPressed([[maybe_unused]] uint32_t irq, [[maybe_unused]] void* ctx)
 {
     exitApp = true;
 }
@@ -357,10 +357,11 @@ appscreen Application::screenSendInput() {
             std::ofstream os(pathini);
             if (os.good() == true) {
                 inipp::Ini<char> ini;
-                ini.sections.emplace("server", (inipp::Ini<char>::Section) {
+                const inipp::Ini<char>::Section server_section = {
                     {"port", std::to_string(Port)},
                     {"ipaddress", IP_ADDRESS},
-                });
+                };
+                ini.sections.emplace("server", server_section);
                 ini.generate(os);
                 os.close();
             }
