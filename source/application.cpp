@@ -3,6 +3,8 @@
 #include "vpad_to_json.h"
 #include <cstdio>
 #include <fstream>
+#include <atomic>
+#include <thread>
 #include <fmt/format.h>
 #include <grrlib.h>
 #include <inipp.h>
@@ -11,6 +13,21 @@
 #include <ogc/pad.h>
 #include <network.h>
 #include "Oxygen_Mono_10_png.h"
+
+/**
+ * Size of the send data stack.
+ */
+constexpr u32 STACKSIZE = 1024 * 4;
+
+/**
+ * Send data stack.
+ */
+static u8 send_data_stack[STACKSIZE] ATTRIBUTE_ALIGN(8);
+
+/**
+ * Whether pad data are being sent.
+ */
+static std::atomic<bool> running{true};
 
 /**
  * Callbacks will set this to true if called.
@@ -70,14 +87,7 @@ static int8_t inet_pton(std::string_view addrString, void *addrBuf) {
 /**
  * Constructor for the Application class.
  */
-Application::Application() :
-    screenId(appscreen::initapp),
-    selected_digit(0),
-    Port(4242),
-    holdTime(0),
-    wait_time_horizontal(0),
-    wait_time_vertical(0)
-{
+Application::Application() {
     // Initialise the Graphics & Video subsystem
     GRRLIB_Init();
 
@@ -91,8 +101,6 @@ Application::Application() :
 
     img_font = GRRLIB_LoadTexturePNG(Oxygen_Mono_10_png);
     GRRLIB_InitTileSet(img_font, 8, 20, 32);
-
-    IP = {192, 168, 1, 100};
 }
 
 /**
@@ -239,6 +247,63 @@ appscreen Application::screenInit() {
 }
 
 /**
+ * Send pad data to UDP.
+ * @param arg Unused.
+ * @return Returns the appscreen to use next.
+ */
+static void *sendPadData([[maybe_unused]] void *arg) {
+    while(running == true) {
+        PADStatus padstatus[PAD_CHANMAX];
+        PAD_Read(padstatus);
+
+        PADData pad_data;
+        memset(&pad_data, 0, sizeof(PADData));
+
+        if(WPADData *wpad_data0 = WPAD_Data(WPAD_CHAN_0);
+            wpad_data0->err == WPAD_ERR_NONE && wpad_data0->data_present > 0) {
+            pad_data.wpad[WPAD_CHAN_0] = wpad_data0;
+        }
+        if(WPADData *wpad_data1 = WPAD_Data(WPAD_CHAN_1);
+            wpad_data1->err == WPAD_ERR_NONE && wpad_data1->data_present > 0) {
+            pad_data.wpad[WPAD_CHAN_1] = wpad_data1;
+        }
+        if(WPADData *wpad_data2 = WPAD_Data(WPAD_CHAN_2);
+            wpad_data2->err == WPAD_ERR_NONE && wpad_data2->data_present > 0) {
+            pad_data.wpad[WPAD_CHAN_2] = wpad_data2;
+        }
+        if(WPADData *wpad_data3 = WPAD_Data(WPAD_CHAN_3);
+            wpad_data3->err == WPAD_ERR_NONE && wpad_data3->data_present > 0) {
+            pad_data.wpad[WPAD_CHAN_3] = wpad_data3;
+        }
+        if(padstatus[PAD_CHAN0].err == PAD_ERR_NONE) {
+            pad_data.pad[PAD_CHAN0] = &padstatus[PAD_CHAN0];
+        }
+        if(padstatus[PAD_CHAN1].err == PAD_ERR_NONE) {
+            pad_data.pad[PAD_CHAN1] = &padstatus[PAD_CHAN1];
+        }
+        if(padstatus[PAD_CHAN2].err == PAD_ERR_NONE) {
+            pad_data.pad[PAD_CHAN2] = &padstatus[PAD_CHAN2];
+        }
+        if(padstatus[PAD_CHAN3].err == PAD_ERR_NONE) {
+            pad_data.pad[PAD_CHAN3] = &padstatus[PAD_CHAN3];
+        }
+
+        // Transform to JSON
+        auto msg_data = pad_to_json(pad_data);
+
+        // Send the message
+        udp_print(msg_data.c_str());
+
+        // Wait for while
+        std::this_thread::sleep_for(std::chrono::milliseconds(16));
+    }
+
+    udp_deinit();
+
+    return nullptr;
+}
+
+/**
  * IP selection screen.
  * @return Returns the appscreen to use next.
  */
@@ -256,6 +321,10 @@ appscreen Application::screenIpSelection() {
 
         // Initialize the UDP connection
         udp_init(IP_ADDRESS, Port);
+
+        if(LWP_CreateThread(&pad_data_thread, sendPadData, this, send_data_stack, STACKSIZE, 80) < 0) {
+            return appscreen::ipselection;
+        }
 
         return appscreen::sendinput;
     }
@@ -313,44 +382,10 @@ appscreen Application::screenIpSelection() {
  * @return Returns the appscreen to use next.
  */
 appscreen Application::screenSendInput() {
-    PADStatus padstatus[PAD_CHANMAX];
-    PAD_Read(padstatus);
-
-    WPADData *wpad_data0 = WPAD_Data(WPAD_CHAN_0);
-    WPADData *wpad_data1 = WPAD_Data(WPAD_CHAN_1);
-    WPADData *wpad_data2 = WPAD_Data(WPAD_CHAN_2);
-    WPADData *wpad_data3 = WPAD_Data(WPAD_CHAN_3);
-
-    PADData pad_data;
-    memset(&pad_data, 0, sizeof(PADData));
-    if(wpad_data0->err == WPAD_ERR_NONE && wpad_data0->data_present > 0) {
-        pad_data.wpad[WPAD_CHAN_0] = wpad_data0;
-    }
-    if(wpad_data1->err == WPAD_ERR_NONE && wpad_data1->data_present > 0) {
-        pad_data.wpad[WPAD_CHAN_1] = wpad_data1;
-    }
-    if(wpad_data2->err == WPAD_ERR_NONE && wpad_data2->data_present > 0) {
-        pad_data.wpad[WPAD_CHAN_2] = wpad_data2;
-    }
-    if(wpad_data3->err == WPAD_ERR_NONE && wpad_data3->data_present > 0) {
-        pad_data.wpad[WPAD_CHAN_3] = wpad_data3;
-    }
-    if(padstatus[PAD_CHAN0].err == PAD_ERR_NONE) {
-        pad_data.pad[PAD_CHAN0] = &padstatus[PAD_CHAN0];
-    }
-    if(padstatus[PAD_CHAN1].err == PAD_ERR_NONE) {
-        pad_data.pad[PAD_CHAN1] = &padstatus[PAD_CHAN1];
-    }
-    if(padstatus[PAD_CHAN2].err == PAD_ERR_NONE) {
-        pad_data.pad[PAD_CHAN2] = &padstatus[PAD_CHAN2];
-    }
-    if(padstatus[PAD_CHAN3].err == PAD_ERR_NONE) {
-        pad_data.pad[PAD_CHAN3] = &padstatus[PAD_CHAN3];
-    }
-
     // Check for exit signal
-    if (wpad_data0->btns_h & WPAD_BUTTON_HOME && ++holdTime > 240) {
-        udp_deinit();
+    if (WPAD_ButtonsHeld(WPAD_CHAN_0) & WPAD_BUTTON_HOME && ++holdTime > 240) {
+        running = false;
+        LWP_JoinThread(pad_data_thread, nullptr);
 
         // Save settings to file
         if (pathini.empty() == false) {
@@ -369,15 +404,9 @@ appscreen Application::screenSendInput() {
 
         return appscreen::exitapp;
     }
-    if (wpad_data0->btns_u & WPAD_BUTTON_HOME) {
+    if (WPAD_ButtonsUp(WPAD_CHAN_0) & WPAD_BUTTON_HOME) {
         holdTime = 0;
     }
-
-    // Transform to JSON
-    auto msg_data = pad_to_json(pad_data);
-
-    // Send the message
-    udp_print(msg_data.c_str());
 
     printHeader();
 
