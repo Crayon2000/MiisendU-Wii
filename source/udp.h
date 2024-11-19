@@ -1,7 +1,7 @@
 #pragma once
 
-#include <string_view>
 #include <cstdint>
+#include <string_view>
 
 void udp_init(std::string_view ip, uint16_t ipport);
 void udp_deinit(void);

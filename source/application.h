@@ -2,19 +2,25 @@
 //---------------------------------------------------------------------------
 
 #include <array>
-#include <string>
 #include <cstdint>
+#include <string>
 #include <ogc/lwp.h>
 
+/**
+ * Application screens.
+ */
 enum class appscreen : uint8_t {
-    initapp,
-    exitapp,
-    ipselection,
-    sendinput
+    initapp,    /**< Initialization screen. */
+    exitapp,    /**< Exit the application. */
+    ipselection,/**< IP selection screen. */
+    sendinput   /**< Send input screen. */
 };
 
 struct GRRLIB_texImg;
 
+/**
+ * Application class.
+ */
 class Application {
     public:
         Application();

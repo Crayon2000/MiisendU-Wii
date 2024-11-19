@@ -1,8 +1,8 @@
 #include "udp.h"
 #include <algorithm>
 #include <chrono>
-#include <thread>
 #include <cstring>
+#include <thread>
 #include <network.h>
 
 static int udp_socket = -1;

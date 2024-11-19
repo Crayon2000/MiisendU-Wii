@@ -1,9 +1,10 @@
 #include "application.h"
+#include "Oxygen_Mono_10_png.h"
 #include "udp.h"
 #include "vpad_to_json.h"
+#include <atomic>
 #include <cstdio>
 #include <fstream>
-#include <atomic>
 #include <thread>
 #include <fmt/format.h>
 #include <grrlib.h>
@@ -12,7 +13,6 @@
 #include <wiiuse/wpad.h>
 #include <ogc/pad.h>
 #include <network.h>
-#include "Oxygen_Mono_10_png.h"
 
 /**
  * Size of the send data stack.
@@ -59,7 +59,8 @@ static void WiiPowerPressed()
  * Converts an IPv4 Internet network address in its standard text presentation form into its numeric binary form.
  * @param addrString A string that contains the text representation of the IP address to convert to numeric binary form.
  * @param addrBuf A pointer to a buffer in which to store the numeric binary representation of the IP address.
- * @return If no error occurs, the function returns a value of 1 and the buffer pointed to by the addrBuf parameter contains the binary numeric IP address in network byte order.
+ * @return If no error occurs, the function returns a value of 1 and the buffer pointed to by the addrBuf parameter
+ *         contains the binary numeric IP address in network byte order.
  */
 static int8_t inet_pton(std::string_view addrString, void *addrBuf) {
     auto a = static_cast<uint8_t *>(addrBuf);
@@ -222,8 +223,7 @@ appscreen Application::screenInit() {
     bool ip_loaded = false;
     if (pathini.empty() == false) {
         Port = 4242;
-        std::ifstream is(pathini);
-        if (is.good() == true) {
+        if (std::ifstream is(pathini); is.good() == true) {
             std::string ipaddress;
             inipp::Ini<char> ini;
             ini.parse(is);
@@ -236,7 +236,7 @@ appscreen Application::screenInit() {
         }
     }
     if (ip_loaded == false) {
-        uint32_t ip = net_gethostip();
+        const uint32_t ip = net_gethostip();
         IP[0] = (ip >> 24) & 0xFF;
         IP[1] = (ip >> 16) & 0xFF;
         IP[2] = (ip >>  8) & 0xFF;
@@ -295,7 +295,7 @@ static void *sendPadData([[maybe_unused]] void *arg) {
         udp_print(msg_data.c_str());
 
         // Wait for while
-        std::this_thread::sleep_for(std::chrono::milliseconds(16));
+        std::this_thread::sleep_for(std::chrono::milliseconds(15));
     }
 
     udp_deinit();
@@ -389,8 +389,7 @@ appscreen Application::screenSendInput() {
 
         // Save settings to file
         if (pathini.empty() == false) {
-            std::ofstream os(pathini);
-            if (os.good() == true) {
+            if (std::ofstream os(pathini); os.good() == true) {
                 inipp::Ini<char> ini;
                 const inipp::Ini<char>::Section server_section = {
                     {"port", std::to_string(Port)},
