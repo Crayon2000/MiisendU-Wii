@@ -18,7 +18,15 @@ find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(PNG REQUIRED libpng)
 pkg_check_modules(FREETYPE REQUIRED freetype2)
-pkg_check_modules(FMT REQUIRED fmt)
+
+include(FetchContent)
+FetchContent_Declare(fmt
+  URL https://github.com/fmtlib/fmt/archive/refs/tags/11.0.2.tar.gz
+)
+FetchContent_Declare(inipp
+  URL https://github.com/mcmtroffaes/inipp/archive/3c1668812026f1a94471b85ac5ab11ab87c43607.tar.gz
+)
+FetchContent_MakeAvailable(fmt inipp)
 
 file(GLOB_RECURSE SRC_FILES
   "${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp"
@@ -37,6 +45,7 @@ target_compile_options(MiisendU-Wii PRIVATE
   -Wall
   -Wextra
   -Wshadow
+  -Wold-style-cast
   -Wunused
   -Wpedantic
   -Wnull-dereference
@@ -66,7 +75,8 @@ target_link_libraries(MiisendU-Wii PRIVATE
   ${FAT}
   ${PNG_LIBRARIES}
   ${FREETYPE_LIBRARIES}
-  ${FMT_LIBRARIES}
+  fmt::fmt
+  inipp::inipp
 )
 
 ogc_create_dol(MiisendU-Wii)

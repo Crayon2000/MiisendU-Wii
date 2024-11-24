@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- Allow button states to be sent at a faster rate.
 - Hold direction buttons to change IP.
 - Remove code for emulated buttons.
 
