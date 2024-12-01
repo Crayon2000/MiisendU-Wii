@@ -9,7 +9,7 @@
 /**
  * Application screens.
  */
-enum class appscreen : uint8_t {
+enum class appscreen : std::uint8_t {
     initapp,    /**< Initialization screen. */
     exitapp,    /**< Exit the application. */
     ipselection,/**< IP selection screen. */
@@ -44,13 +44,13 @@ class Application {
 
         // Sreen IP Selection
         std::array<uint8_t, 4> IP{192, 168, 1, 100};
-        int8_t selected_digit{0};
+        std::int8_t selected_digit{0};
         std::string IP_ADDRESS;
-        uint16_t Port{4242};
+        std::uint16_t Port{4242};
         std::string msg_connected;
-        uint16_t holdTime{0};
+        std::uint16_t holdTime{0};
         std::string pathini;
-        uint32_t wait_time_horizontal{0};
-        uint32_t wait_time_vertical{0};
+        std::uint32_t wait_time_horizontal{0};
+        std::uint32_t wait_time_vertical{0};
 };
 //---------------------------------------------------------------------------

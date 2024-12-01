@@ -13,7 +13,7 @@ static volatile int udp_lock = 0;
  * @param ipString The IP address to connect to.
  * @param ipport The port to connect to.
  */
-void udp_init(std::string_view ipString, uint16_t ipport)
+void udp_init(std::string_view ipString, std::uint16_t ipport)
 {
     udp_socket = net_socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
     if (udp_socket < 0) {

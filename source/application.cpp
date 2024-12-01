@@ -37,12 +37,12 @@ static bool exitApp = false;
 /**
  * Wait time in frames.
  */
-static constexpr uint8_t wait_time = 14;
+static constexpr std::uint8_t wait_time = 14;
 
 /**
  * Callback for the reset button on the Wii.
  */
-static void WiiResetPressed([[maybe_unused]] uint32_t irq, [[maybe_unused]] void* ctx)
+static void WiiResetPressed([[maybe_unused]] std::uint32_t irq, [[maybe_unused]] void* ctx)
 {
     exitApp = true;
 }
@@ -62,11 +62,11 @@ static void WiiPowerPressed()
  * @return If no error occurs, the function returns a value of 1 and the buffer pointed to by the addrBuf parameter
  *         contains the binary numeric IP address in network byte order.
  */
-static int8_t inet_pton(std::string_view addrString, void *addrBuf) {
+static std::int8_t inet_pton(std::string_view addrString, void *addrBuf) {
     auto a = static_cast<uint8_t *>(addrBuf);
-    for (int8_t i = 0; i < 4; ++i) {
-        int16_t v;
-        int8_t j;
+    for (std::int8_t i = 0; i < 4; ++i) {
+        std::int16_t v;
+        std::int8_t j;
         for (v = j = 0; j < 3 && std::isdigit(addrString[j]); ++j) {
             v = 10 * v + addrString[j] - '0';
         }
@@ -187,7 +187,7 @@ void Application::printHeader() {
  * @return Returns the appscreen to use next.
  */
 appscreen Application::screenInit() {
-    static uint8_t print_count = 1;
+    static std::uint8_t print_count = 1;
 
     // Print loading screen
     GRRLIB_FillScreen(0x000000FF);
@@ -236,7 +236,7 @@ appscreen Application::screenInit() {
         }
     }
     if (ip_loaded == false) {
-        const uint32_t ip = net_gethostip();
+        const std::uint32_t ip = net_gethostip();
         IP[0] = (ip >> 24) & 0xFF;
         IP[1] = (ip >> 16) & 0xFF;
         IP[2] = (ip >>  8) & 0xFF;
