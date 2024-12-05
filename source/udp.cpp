@@ -6,7 +6,7 @@
 #include <network.h>
 
 static int udp_socket = -1;
-static volatile int udp_lock = 0;
+static volatile bool udp_lock = false;
 
 /**
  * Initialize the UDP socket.
@@ -56,10 +56,10 @@ void udp_print(const char *str)
         return;
     }
 
-    while(udp_lock != 0) {
+    while(udp_lock == true) {
         std::this_thread::sleep_for(std::chrono::microseconds(1000));
     }
-    udp_lock = 1;
+    udp_lock = true;
 
     int len = std::strlen(str);
     while (len > 0) {
@@ -73,5 +73,5 @@ void udp_print(const char *str)
         str += ret;
     }
 
-    udp_lock = 0;
+    udp_lock = false;
 }

@@ -56,36 +56,6 @@ static void WiiPowerPressed()
 }
 
 /**
- * Converts an IPv4 Internet network address in its standard text presentation form into its numeric binary form.
- * @param addrString A string that contains the text representation of the IP address to convert to numeric binary form.
- * @param addrBuf A pointer to a buffer in which to store the numeric binary representation of the IP address.
- * @return If no error occurs, the function returns a value of 1 and the buffer pointed to by the addrBuf parameter
- *         contains the binary numeric IP address in network byte order.
- */
-static std::int8_t inet_pton(std::string_view addrString, void *addrBuf) {
-    auto a = static_cast<uint8_t *>(addrBuf);
-    for (std::int8_t i = 0; i < 4; ++i) {
-        std::int16_t v;
-        std::int8_t j;
-        for (v = j = 0; j < 3 && std::isdigit(addrString[j]); ++j) {
-            v = 10 * v + addrString[j] - '0';
-        }
-        if (j == 0 || (j > 1 && addrString[0] == '0') || v > 255) {
-            return 0;
-        }
-        a[i] = v;
-        if (addrString[j] == 0 && i == 3) {
-            return 1;
-        }
-        if (addrString[j] != '.') {
-            return 0;
-        }
-        addrString.remove_prefix(j + 1);
-    }
-    return 0;
-}
-
-/**
  * Constructor for the Application class.
  */
 Application::Application() {
@@ -230,7 +200,8 @@ appscreen Application::screenInit() {
             inipp::extract(ini.sections["server"]["port"], Port);
             inipp::extract(ini.sections["server"]["ipaddress"], ipaddress);
             is.close();
-            if(inet_pton(ipaddress, &IP) > 0) {
+            if(struct in_addr addr; inet_aton(ipaddress.c_str(), &addr) > 0) {
+                IP = std::bit_cast<std::array<uint8_t, 4>>(addr.s_addr);
                 ip_loaded = true;
             }
         }
