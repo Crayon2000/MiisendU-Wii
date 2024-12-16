@@ -26,6 +26,11 @@ FetchContent_Declare(fmt
 FetchContent_Declare(inipp
   URL https://github.com/mcmtroffaes/inipp/archive/3c1668812026f1a94471b85ac5ab11ab87c43607.tar.gz
 )
+FetchContent_Declare(
+  rapidjson
+  URL https://github.com/Tencent/rapidjson/archive/refs/heads/master.tar.gz
+)
+FetchContent_Populate(rapidjson)
 FetchContent_MakeAvailable(fmt inipp)
 
 file(GLOB_RECURSE SRC_FILES
@@ -62,6 +67,7 @@ target_include_directories(MiisendU-Wii PRIVATE
   "${CMAKE_CURRENT_SOURCE_DIR}/source"
   "${DEVKITPRO}/portlibs/ppc/include"
   "${DEVKITPRO}/portlibs/wii/include"
+  "${rapidjson_SOURCE_DIR}/include"
 )
 
 dkp_add_embedded_binary_library(data

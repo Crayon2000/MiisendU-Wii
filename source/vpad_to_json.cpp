@@ -128,7 +128,7 @@ std::string pad_to_json(const PADData& pad_data)
                         writer.Double(x);
                         writer.Key("stickY");
                         writer.Double(y);
-                        writer.EndObject(); // Start extension object
+                        writer.EndObject(); // End extension object
                     }
                     break;
                 case EXP_CLASSIC:
@@ -161,7 +161,7 @@ std::string pad_to_json(const PADData& pad_data)
                         writer.Double(pad_data.wpad[i]->exp.classic.l_shoulder);
                         writer.Key("rTrigger");
                         writer.Double(pad_data.wpad[i]->exp.classic.r_shoulder);
-                        writer.EndObject(); // Start extension object
+                        writer.EndObject(); // End extension object
                     }
                     break;
                 case EXP_GUITAR_HERO_3:
