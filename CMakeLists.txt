@@ -5,14 +5,6 @@ find_library(FAT fat
   PATHS "${OGC_ROOT}/lib/${OGC_SUBDIR}"
   REQUIRED
 )
-find_library(PNGU pngu
-  PATHS "${DEVKITPRO}/portlibs/ppc/lib"
-  REQUIRED
-)
-find_library(GRRLIB grrlib
-  PATHS "${DEVKITPRO}/portlibs/${OGC_CONSOLE}/lib"
-  REQUIRED
-)
 
 find_package(PkgConfig REQUIRED)
 
@@ -23,12 +15,14 @@ include(FetchContent)
 FetchContent_Declare(inipp
   URL https://github.com/mcmtroffaes/inipp/archive/3c1668812026f1a94471b85ac5ab11ab87c43607.tar.gz
 )
-FetchContent_Declare(
-  rapidjson
+FetchContent_Declare(rapidjson
   URL https://github.com/Tencent/rapidjson/archive/refs/heads/master.tar.gz
 )
+FetchContent_Declare(grrlib
+  URL https://github.com/GRRLIB/GRRLIB/archive/refs/heads/master.tar.gz
+)
 FetchContent_Populate(rapidjson)
-FetchContent_MakeAvailable(inipp)
+FetchContent_MakeAvailable(inipp grrlib)
 
 file(GLOB_RECURSE SRC_FILES
   "${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp"
@@ -75,8 +69,7 @@ dkp_add_embedded_binary_library(data
 
 target_link_libraries(MiisendU-Wii PRIVATE
   data
-  ${GRRLIB}
-  ${PNGU}
+  grrlib
   ${FAT}
   ${PNG_LIBRARIES}
   ${FREETYPE_LIBRARIES}
