@@ -6,7 +6,7 @@
 #include <cstdio>
 #include <fstream>
 #include <thread>
-#include <fmt/format.h>
+#include <format>
 #include <grrlib.h>
 #include <inipp.h>
 #include <cstdlib>
@@ -133,7 +133,7 @@ void Application::SetPath(std::string_view path) {
     const auto pos = path.find_last_of('/');
     std::string_view tmp = path.substr(0, pos + 1);
     if(tmp.empty() == false) {
-        pathini = fmt::format("{}settings.ini", tmp);
+        pathini = std::format("{}settings.ini", tmp);
     }
 }
 
@@ -192,12 +192,12 @@ appscreen Application::screenInit() {
     // Load default IP address
     bool ip_loaded = false;
     if (pathini.empty() == false) {
-        Port = 4242;
+        port = 4242;
         if (std::ifstream is(pathini); is.good() == true) {
             std::string ipaddress;
             inipp::Ini<char> ini;
             ini.parse(is);
-            inipp::extract(ini.sections["server"]["port"], Port);
+            inipp::extract(ini.sections["server"]["port"], port);
             inipp::extract(ini.sections["server"]["ipaddress"], ipaddress);
             is.close();
             if(struct in_addr addr; inet_aton(ipaddress.c_str(), &addr) > 0) {
@@ -285,13 +285,13 @@ appscreen Application::screenIpSelection() {
     }
     if (WPAD_ButtonsDown(WPAD_CHAN_0) & WPAD_BUTTON_A) {
         // Get IP Address (without spaces)
-        IP_ADDRESS = fmt::format("{}.{}.{}.{}", IP[0], IP[1], IP[2], IP[3]);
+        ip_address = std::format("{}.{}.{}.{}", IP[0], IP[1], IP[2], IP[3]);
 
         // Output the IP address
-        msg_connected = fmt::format("Connected to {}:{}", IP_ADDRESS, Port);
+        msg_connected = std::format("Connected to {}:{}", ip_address, port);
 
         // Initialize the UDP connection
-        udp_init(IP_ADDRESS, Port);
+        udp_init(ip_address, port);
 
         if(LWP_CreateThread(&pad_data_thread, sendPadData, this, send_data_stack, STACKSIZE, 80) < 0) {
             return appscreen::ipselection;
@@ -335,9 +335,9 @@ appscreen Application::screenIpSelection() {
     GRRLIB_Printf(10 + (4 * 8 * selected_digit), 100 + (15 * 8), img_font, 0xFFFFFFFF, 1,
         "vvv");
 
-    const std::string IP_str = fmt::format("{:3d}.{:3d}.{:3d}.{:3d}", IP[0], IP[1], IP[2], IP[3]);
+    const std::string ip_str = std::format("{:3d}.{:3d}.{:3d}.{:3d}", IP[0], IP[1], IP[2], IP[3]);
     GRRLIB_Printf(10, 100 + (15 * 9), img_font, 0xFFFFFFFF, 1,
-        IP_str.c_str());
+        ip_str.c_str());
 
     GRRLIB_Printf(10, 100 + (15 * 15), img_font, 0xFFFFFFFF, 1,
         "Press 'A' to confirm");
@@ -363,8 +363,8 @@ appscreen Application::screenSendInput() {
             if (std::ofstream os(pathini); os.good() == true) {
                 inipp::Ini<char> ini;
                 const inipp::Ini<char>::Section server_section = {
-                    {"port", std::to_string(Port)},
-                    {"ipaddress", IP_ADDRESS},
+                    {"port", std::to_string(port)},
+                    {"ipaddress", ip_address},
                 };
                 ini.sections.emplace("server", server_section);
                 ini.generate(os);

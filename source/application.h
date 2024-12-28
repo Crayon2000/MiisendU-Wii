@@ -45,11 +45,11 @@ class Application {
         // Sreen IP Selection
         std::array<std::uint8_t, 4> IP{192, 168, 1, 100};
         std::int8_t selected_digit{0};
-        std::string IP_ADDRESS;
-        std::uint16_t Port{4242};
+        std::string ip_address{};
+        std::uint16_t port{4242};
         std::string msg_connected;
         std::uint16_t holdTime{0};
-        std::string pathini;
+        std::string pathini{};
         std::uint32_t wait_time_horizontal{0};
         std::uint32_t wait_time_vertical{0};
 };

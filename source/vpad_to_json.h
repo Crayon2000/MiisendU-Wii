@@ -5,7 +5,7 @@
 #include <ogc/pad.h>
 
 /**
- * Struct to hold all controllers data.
+ * Structure to hold all controllers data.
  */
 typedef struct {
     WPADData* wpad[4]; /**< Wii Remotes. */

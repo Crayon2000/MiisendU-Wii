@@ -20,9 +20,6 @@ pkg_check_modules(PNG REQUIRED libpng)
 pkg_check_modules(FREETYPE REQUIRED freetype2)
 
 include(FetchContent)
-FetchContent_Declare(fmt
-  URL https://github.com/fmtlib/fmt/archive/refs/tags/11.0.2.tar.gz
-)
 FetchContent_Declare(inipp
   URL https://github.com/mcmtroffaes/inipp/archive/3c1668812026f1a94471b85ac5ab11ab87c43607.tar.gz
 )
@@ -31,7 +28,7 @@ FetchContent_Declare(
   URL https://github.com/Tencent/rapidjson/archive/refs/heads/master.tar.gz
 )
 FetchContent_Populate(rapidjson)
-FetchContent_MakeAvailable(fmt inipp)
+FetchContent_MakeAvailable(inipp)
 
 file(GLOB_RECURSE SRC_FILES
   "${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp"
@@ -50,8 +47,10 @@ target_compile_options(MiisendU-Wii PRIVATE
   -Wall
   -Wextra
   -Wshadow
+  -Wnon-virtual-dtor
   -Wold-style-cast
   -Wunused
+  -Woverloaded-virtual
   -Wpedantic
   -Wnull-dereference
   -Wmisleading-indentation
@@ -81,7 +80,6 @@ target_link_libraries(MiisendU-Wii PRIVATE
   ${FAT}
   ${PNG_LIBRARIES}
   ${FREETYPE_LIBRARIES}
-  fmt::fmt
   inipp::inipp
 )
 

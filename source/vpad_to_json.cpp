@@ -1,5 +1,6 @@
 #include "vpad_to_json.h"
 #include <map>
+#include <cmath>
 #include "rapidjson/writer.h"
 
 /**
@@ -94,9 +95,9 @@ std::string pad_to_json(const PADData& pad_data)
             writer.Key("hold");
             writer.Uint(holdwii);
             writer.Key("posX");
-            writer.Int(pad_data.wpad[i]->ir.x);
+            writer.Int(static_cast<int>(std::round(pad_data.wpad[i]->ir.x)));
             writer.Key("posY");
-            writer.Int(pad_data.wpad[i]->ir.y);
+            writer.Int(static_cast<int>(std::round(pad_data.wpad[i]->ir.y)));
             //writer.Key("angleX");
             //writer.Double(pad_data.wpad[i]->angle.x);
             //writer.Key("angleY");
