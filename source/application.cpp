@@ -91,9 +91,7 @@ Application::~Application()
  */
 bool Application::Run()
 {
-    auto returnvalue = true;
-    WPAD_ScanPads(); // Scan the Wii remotes
-    //PAD_ScanPads(); // Scan the GC Controller
+    bool return_value = true;
 
     // Check if the Wii buttons were pressed
     if(exitApp == true)
@@ -107,6 +105,8 @@ bool Application::Run()
             screenId = screenInit();
             return true;
         case appscreen::ipselection:
+            WPAD_ReadPending(WPAD_CHAN_ALL, nullptr); // Scan the Wii remotes
+            PAD_ScanPads(); // Scan the GC Controllers
             screenId = screenIpSelection();
             break;
         case appscreen::sendinput:
@@ -116,13 +116,13 @@ bool Application::Run()
             [[fallthrough]];
         default:
             GRRLIB_FillScreen(0x000000FF);
-            returnvalue = false;
+            return_value = false;
             break;
     }
 
     GRRLIB_Render(); // Render the frame buffer to the TV
 
-    return returnvalue;
+    return return_value;
 }
 
 /**
@@ -178,7 +178,7 @@ appscreen Application::screenInit() {
             net_result = net_init();
         } while (net_result == -EAGAIN);
         if (net_result < 0) {
-            WPAD_ScanPads();
+            WPAD_ReadPending(WPAD_CHAN_ALL, nullptr);
             if (WPAD_ButtonsDown(WPAD_CHAN_0) & WPAD_BUTTON_HOME) {
                 return appscreen::exitapp;
             }
@@ -224,6 +224,9 @@ appscreen Application::screenInit() {
  */
 static void *sendPadData([[maybe_unused]] void *arg) {
     while(running == true) {
+        for(s32 i = WPAD_CHAN_0; i < WPAD_MAX_WIIMOTES; ++i) {
+            WPAD_ReadPending(i, nullptr);
+        }
         PADStatus padstatus[PAD_CHANMAX];
         PAD_Read(padstatus);
 
@@ -279,11 +282,13 @@ static void *sendPadData([[maybe_unused]] void *arg) {
  * @return Returns the appscreen to use next.
  */
 appscreen Application::screenIpSelection() {
+    WPADData *wpad_data0 = WPAD_Data(WPAD_CHAN_0);
+
     // If [HOME] was pressed on the first Wii Remote, break out of the loop
-    if (WPAD_ButtonsDown(WPAD_CHAN_0) & WPAD_BUTTON_HOME) {
+    if (wpad_data0->btns_d & WPAD_BUTTON_HOME) {
         return appscreen::exitapp;
     }
-    if (WPAD_ButtonsDown(WPAD_CHAN_0) & WPAD_BUTTON_A) {
+    if (wpad_data0->btns_d & WPAD_BUTTON_A) {
         // Get IP Address (without spaces)
         ip_address = std::format("{}.{}.{}.{}", IP[0], IP[1], IP[2], IP[3]);
 
@@ -300,26 +305,26 @@ appscreen Application::screenIpSelection() {
         return appscreen::sendinput;
     }
 
-    if (WPAD_ButtonsHeld(WPAD_CHAN_0) & WPAD_BUTTON_LEFT  && selected_digit > 0) {
-        if (WPAD_ButtonsDown(WPAD_CHAN_0) & WPAD_BUTTON_LEFT || wait_time_horizontal++ > wait_time) {
+    if (wpad_data0->btns_h & WPAD_BUTTON_LEFT  && selected_digit > 0) {
+        if (wpad_data0->btns_d & WPAD_BUTTON_LEFT || wait_time_horizontal++ > wait_time) {
             selected_digit--;
             wait_time_horizontal = 0;
         }
     }
-    if (WPAD_ButtonsHeld(WPAD_CHAN_0) & WPAD_BUTTON_RIGHT && selected_digit < 3) {
-        if (WPAD_ButtonsDown(WPAD_CHAN_0) & WPAD_BUTTON_RIGHT || wait_time_horizontal++ > wait_time) {
+    if (wpad_data0->btns_h & WPAD_BUTTON_RIGHT && selected_digit < 3) {
+        if (wpad_data0->btns_d & WPAD_BUTTON_RIGHT || wait_time_horizontal++ > wait_time) {
             selected_digit++;
             wait_time_horizontal = 0;
         }
     }
-    if (WPAD_ButtonsHeld(WPAD_CHAN_0) & WPAD_BUTTON_UP) {
-        if (WPAD_ButtonsDown(WPAD_CHAN_0) & WPAD_BUTTON_UP || wait_time_vertical++ > wait_time) {
+    if (wpad_data0->btns_h & WPAD_BUTTON_UP) {
+        if (wpad_data0->btns_d & WPAD_BUTTON_UP || wait_time_vertical++ > wait_time) {
             IP[selected_digit] = (IP[selected_digit] < 255) ? (IP[selected_digit] + 1) : 0;
             wait_time_vertical = 0;
         }
     }
-    if (WPAD_ButtonsHeld(WPAD_CHAN_0) & WPAD_BUTTON_DOWN) {
-        if (WPAD_ButtonsDown(WPAD_CHAN_0) & WPAD_BUTTON_DOWN || wait_time_vertical++ > wait_time) {
+    if (wpad_data0->btns_h & WPAD_BUTTON_DOWN) {
+        if (wpad_data0->btns_d & WPAD_BUTTON_DOWN || wait_time_vertical++ > wait_time) {
             IP[selected_digit] = (IP[selected_digit] >   0) ? (IP[selected_digit] - 1) : 255;
             wait_time_vertical = 0;
         }
@@ -353,8 +358,10 @@ appscreen Application::screenIpSelection() {
  * @return Returns the appscreen to use next.
  */
 appscreen Application::screenSendInput() {
+    WPADData *wpad_data0 = WPAD_Data(WPAD_CHAN_0);
+
     // Check for exit signal
-    if (WPAD_ButtonsHeld(WPAD_CHAN_0) & WPAD_BUTTON_HOME && ++holdTime > 240) {
+    if (wpad_data0->btns_h & WPAD_BUTTON_HOME && ++holdTime > 240) {
         running = false;
         LWP_JoinThread(pad_data_thread, nullptr);
 
@@ -374,7 +381,7 @@ appscreen Application::screenSendInput() {
 
         return appscreen::exitapp;
     }
-    if (WPAD_ButtonsUp(WPAD_CHAN_0) & WPAD_BUTTON_HOME) {
+    if (wpad_data0->btns_u & WPAD_BUTTON_HOME) {
         holdTime = 0;
     }
 
