@@ -24,10 +24,6 @@ FetchContent_Declare(grrlib
 FetchContent_Populate(rapidjson)
 FetchContent_MakeAvailable(inipp grrlib)
 
-file(GLOB_RECURSE SRC_FILES
-  "${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp"
-)
-
 file(GLOB_RECURSE BIN_FILES
   "${CMAKE_CURRENT_SOURCE_DIR}/data/*.png"
 )
@@ -43,23 +39,28 @@ target_compile_options(MiisendU-Wii PRIVATE
   -Wshadow
   -Wnon-virtual-dtor
   -Wold-style-cast
+  -Wcast-align
   -Wunused
   -Woverloaded-virtual
   -Wpedantic
   -Wnull-dereference
+  -Wdouble-promotion
+  -Wimplicit-fallthrough
   -Wmisleading-indentation
   -Wduplicated-cond
   -Wduplicated-branches
+  -Wsuggest-override
 )
 
 target_sources(MiisendU-Wii PRIVATE
-  ${SRC_FILES}
+  "${CMAKE_CURRENT_SOURCE_DIR}/source/main.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/source/application.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/source/udp.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/source/vpad_to_json.cpp"
 )
 
 target_include_directories(MiisendU-Wii PRIVATE
   "${CMAKE_CURRENT_SOURCE_DIR}/source"
-  "${DEVKITPRO}/portlibs/ppc/include"
-  "${DEVKITPRO}/portlibs/wii/include"
   "${rapidjson_SOURCE_DIR}/include"
 )
 

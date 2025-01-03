@@ -208,10 +208,10 @@ appscreen Application::screenInit() {
     }
     if (ip_loaded == false) {
         const std::uint32_t ip = net_gethostip();
-        IP[0] = (ip >> 24) & 0xFF;
-        IP[1] = (ip >> 16) & 0xFF;
-        IP[2] = (ip >>  8) & 0xFF;
-        IP[3] = (ip >>  0) & 0xFF;
+        IP[0] = static_cast<std::uint8_t>((ip >> 24) & 0xFF);
+        IP[1] = static_cast<std::uint8_t>((ip >> 16) & 0xFF);
+        IP[2] = static_cast<std::uint8_t>((ip >>  8) & 0xFF);
+        IP[3] = static_cast<std::uint8_t>((ip >>  0) & 0xFF);
     }
 
     return appscreen::ipselection;
@@ -337,7 +337,7 @@ appscreen Application::screenIpSelection() {
     GRRLIB_Printf(10, 100 + (15 * 6), img_font, 0xFFFFFFFF, 1,
         "(use the DPAD to edit the IP address)");
 
-    GRRLIB_Printf(10 + (4 * 8 * selected_digit), 100 + (15 * 8), img_font, 0xFFFFFFFF, 1,
+    GRRLIB_Printf(10 + (4.0f * 8.0f * selected_digit), 100 + (15 * 8), img_font, 0xFFFFFFFF, 1,
         "vvv");
 
     const std::string ip_str = std::format("{:3d}.{:3d}.{:3d}.{:3d}", IP[0], IP[1], IP[2], IP[3]);

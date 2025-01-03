@@ -42,7 +42,7 @@ class Application {
         appscreen screenId{appscreen::initapp};
         lwp_t pad_data_thread{LWP_THREAD_NULL};
 
-        // Sreen IP Selection
+        // Screen IP Selection
         std::array<std::uint8_t, 4> IP{192, 168, 1, 100};
         std::int8_t selected_digit{0};
         std::string ip_address{};

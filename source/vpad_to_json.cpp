@@ -73,7 +73,7 @@ std::string pad_to_json(const PADData& pad_data)
     {
         writer.Key("wiiRemotes");
         writer.StartArray();
-        for(s8 i = 0; i < 4; ++i)
+        for(u8 i = 0; i < 4; ++i)
         {
             if(pad_data.wpad[i] == nullptr)
             {
@@ -187,7 +187,7 @@ std::string pad_to_json(const PADData& pad_data)
     {
         writer.Key("gameCubeControllers");
         writer.StartArray();
-        for(s8 i = 0; i < 4; ++i)
+        for(u8 i = 0; i < 4; ++i)
         {
             if(pad_data.pad[i] == nullptr)
             {
