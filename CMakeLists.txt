@@ -56,7 +56,7 @@ target_sources(MiisendU-Wii PRIVATE
   "${CMAKE_CURRENT_SOURCE_DIR}/source/main.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/source/application.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/source/udp.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/source/vpad_to_json.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/source/pad_to_json.cpp"
 )
 
 target_include_directories(MiisendU-Wii PRIVATE
