@@ -1,5 +1,6 @@
 #include "application.h"
-#include "Oxygen_Mono_10_png.h"
+#include "textures.h"
+#include "textures_tpl.h"
 #include "udp.h"
 #include "pad_to_json.h"
 #include <atomic>
@@ -70,7 +71,7 @@ Application::Application() {
     SYS_SetResetCallback(WiiResetPressed);
     SYS_SetPowerCallback(WiiPowerPressed);
 
-    img_font = GRRLIB_LoadTexturePNG(Oxygen_Mono_10_png);
+    img_font = GRRLIB_LoadTextureTPL(textures_tpl, textures_tpl_size, TPL_ID_FONT);
     GRRLIB_InitTileSet(img_font, 8, 20, 32);
 }
 
@@ -79,7 +80,7 @@ Application::Application() {
  */
 Application::~Application()
 {
-    GRRLIB_FreeTexture(img_font);
+    free(img_font);
     WPAD_Shutdown();
     net_deinit();
     GRRLIB_Exit(); // Be a good boy, clear the memory allocated by GRRLIB
