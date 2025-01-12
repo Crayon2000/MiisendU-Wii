@@ -71,7 +71,7 @@ Application::Application() {
     SYS_SetResetCallback(WiiResetPressed);
     SYS_SetPowerCallback(WiiPowerPressed);
 
-    img_font = GRRLIB_LoadTextureTPL(textures_tpl, textures_tpl_size, TPL_ID_FONT);
+    img_font = GRRLIB_LoadTextureTPL(textures_tpl, TPL_ID_FONT);
     GRRLIB_InitTileSet(img_font, 8, 20, 32);
 }
 
