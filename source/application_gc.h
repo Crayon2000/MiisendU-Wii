@@ -16,6 +16,7 @@ class ApplicationGc : public Application {
         bool Run() {return true;}
 
     protected:
+        void printHeader();
         appscreen screenInit() override {return appscreen::exitapp;}
         appscreen screenIpSelection() override {return appscreen::exitapp;} 
         appscreen screenSendInput() override {return appscreen::exitapp;}
