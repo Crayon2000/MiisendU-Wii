@@ -4,6 +4,7 @@
 #include <array>
 #include <cstdint>
 #include <string>
+#include <string_view>
 #include <ogc/lwp.h>
 
 /**
@@ -25,32 +26,24 @@ class Application {
     public:
         Application();
         Application(Application const&) = delete;
-        ~Application();
+        virtual ~Application();
         Application& operator=(Application const&) = delete;
 
-        bool Run();
+        static void Quit();
         void SetPath(std::string_view path);
 
     protected:
-        void printHeader();
-        appscreen screenInit();
-        appscreen screenIpSelection();
-        appscreen screenSendInput();
+        virtual appscreen screenInit() = 0;
+        virtual appscreen screenIpSelection() = 0;
+        virtual appscreen screenSendInput() = 0;
 
-    private:
+        static bool exitApp;
+
         GRRLIB_texImg *img_font{nullptr};
         appscreen screenId{appscreen::initapp};
-        lwp_t pad_data_thread{LWP_THREAD_NULL};
-
-        // Screen IP Selection
-        std::array<std::uint8_t, 4> IP{192, 168, 1, 100};
-        std::int8_t selected_digit{0};
-        std::string ip_address{};
-        std::uint16_t port{4242};
-        std::string msg_connected;
-        std::uint16_t holdTime{0};
         std::string pathini{};
-        std::uint32_t wait_time_horizontal{0};
-        std::uint32_t wait_time_vertical{0};
+
+    private:
+
 };
 //---------------------------------------------------------------------------

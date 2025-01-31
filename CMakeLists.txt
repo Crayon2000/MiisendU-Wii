@@ -54,6 +54,15 @@ target_sources(MiisendU-Wii PRIVATE
   "${CMAKE_CURRENT_SOURCE_DIR}/source/udp.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/source/pad_to_json.cpp"
 )
+if(CMAKE_SYSTEM_NAME STREQUAL "NintendoGameCube")
+  target_sources(MiisendU-Wii PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/source/application_gc.cpp"
+  )
+else()
+  target_sources(MiisendU-Wii PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/source/application_wii.cpp"
+  )
+endif()
 
 target_include_directories(MiisendU-Wii PRIVATE
   "${CMAKE_CURRENT_SOURCE_DIR}/source"
