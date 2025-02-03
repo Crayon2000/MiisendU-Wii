@@ -5,6 +5,8 @@
  * Constructor for the ApplicationGc class.
  */
 ApplicationGc::ApplicationGc() : Application() {
+    // Initialise the GC Controllers
+    PAD_Init();
 }
 
 /**
@@ -12,6 +14,13 @@ ApplicationGc::ApplicationGc() : Application() {
  */
 ApplicationGc::~ApplicationGc()
 {
+}
+
+/**
+ * Scan the controllers.
+ */
+void ApplicationGc::scanPads() {
+    PAD_ScanPads(); // Scan the GC Controllers
 }
 
 /**

@@ -29,6 +29,7 @@ class Application {
         virtual ~Application();
         Application& operator=(Application const&) = delete;
 
+        bool Run();
         static void Quit();
         void SetPath(std::string_view path);
 
@@ -36,6 +37,7 @@ class Application {
         virtual appscreen screenInit() = 0;
         virtual appscreen screenIpSelection() = 0;
         virtual appscreen screenSendInput() = 0;
+        virtual void scanPads() = 0;
 
         static bool exitApp;
 

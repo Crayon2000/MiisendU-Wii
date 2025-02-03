@@ -17,13 +17,12 @@ class ApplicationWii : public Application {
         ~ApplicationWii();
         ApplicationWii& operator=(ApplicationWii const&) = delete;
 
-        bool Run();
-
     protected:
         void printHeader();
         appscreen screenInit() override;
         appscreen screenIpSelection() override;
         appscreen screenSendInput() override;
+        void scanPads() override;
 
     private:
         lwp_t pad_data_thread{LWP_THREAD_NULL};

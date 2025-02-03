@@ -72,43 +72,11 @@ ApplicationWii::~ApplicationWii()
 }
 
 /**
- * Run.
- * @return Returns true if application should keep running.
+ * Scan the controllers.
  */
-bool ApplicationWii::Run()
-{
-    bool return_value = true;
-
-    // Check if the Wii buttons were pressed
-    if(exitApp == true)
-    {   // Exit the application
-        screenId = appscreen::exitapp;
-    }
-
-    switch(screenId)
-    {
-        case appscreen::initapp:
-            screenId = screenInit();
-            return true;
-        case appscreen::ipselection:
-            WPAD_ReadPending(WPAD_CHAN_ALL, nullptr); // Scan the Wii remotes
-            PAD_ScanPads(); // Scan the GC Controllers
-            screenId = screenIpSelection();
-            break;
-        case appscreen::sendinput:
-            screenId = screenSendInput();
-            break;
-        case appscreen::exitapp:
-            [[fallthrough]];
-        default:
-            GRRLIB_FillScreen(0x000000FF);
-            return_value = false;
-            break;
-    }
-
-    GRRLIB_Render(); // Render the frame buffer to the TV
-
-    return return_value;
+void ApplicationWii::scanPads() {
+    WPAD_ReadPending(WPAD_CHAN_ALL, nullptr); // Scan the Wii remotes
+    PAD_ScanPads(); // Scan the GC Controllers
 }
 
 /**
@@ -152,7 +120,7 @@ appscreen ApplicationWii::screenInit() {
             net_result = net_init();
         } while (net_result == -EAGAIN);
         if (net_result < 0) {
-            WPAD_ReadPending(WPAD_CHAN_ALL, nullptr);
+            scanPads();
             if (WPAD_ButtonsDown(WPAD_CHAN_0) & WPAD_BUTTON_HOME) {
                 return appscreen::exitapp;
             }

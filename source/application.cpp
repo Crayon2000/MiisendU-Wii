@@ -30,6 +30,45 @@ Application::~Application()
 }
 
 /**
+ * Run.
+ * @return Returns true if application should keep running.
+ */
+bool Application::Run()
+{
+    bool return_value = true;
+
+    // Check if the Wii buttons were pressed
+    if(exitApp == true)
+    {   // Exit the application
+        screenId = appscreen::exitapp;
+    }
+
+    switch(screenId)
+    {
+        case appscreen::initapp:
+            screenId = screenInit();
+            return true;
+        case appscreen::ipselection:
+            scanPads();
+            screenId = screenIpSelection();
+            break;
+        case appscreen::sendinput:
+            screenId = screenSendInput();
+            break;
+        case appscreen::exitapp:
+            [[fallthrough]];
+        default:
+            GRRLIB_FillScreen(0x000000FF);
+            return_value = false;
+            break;
+    }
+
+    GRRLIB_Render(); // Render the frame buffer to the TV
+
+    return return_value;
+}
+
+/**
  * Quit application.
  */
 void Application::Quit()
