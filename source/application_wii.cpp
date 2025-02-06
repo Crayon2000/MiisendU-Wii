@@ -79,6 +79,18 @@ void ApplicationWii::scanPads() {
     PAD_ScanPads(); // Scan the GC Controllers
 }
 
+bool ApplicationWii::isHOMEHeld() {
+    return (WPAD_ButtonsHeld(WPAD_CHAN_0) & WPAD_BUTTON_HOME);
+}
+
+bool ApplicationWii::isHOMEUp() {
+    return (WPAD_ButtonsUp(WPAD_CHAN_0) & WPAD_BUTTON_HOME);
+}
+
+bool ApplicationWii::isHOMEDown() {
+   return (WPAD_ButtonsDown(WPAD_CHAN_0) & WPAD_BUTTON_HOME);
+}
+
 /**
  * Print Header.
  */
@@ -92,71 +104,6 @@ void ApplicationWii::printHeader() {
     GRRLIB_Printf(10, 10 + (15 * 2), img_font, 0xFFFFFFFF, 1, logo2);
     GRRLIB_Printf(10, 10 + (15 * 3), img_font, 0xFFFFFFFF, 1, logo3);
     GRRLIB_Printf(10, 10 + (15 * 4), img_font, 0xFFFFFFFF, 1, logo4);
-}
-
-/**
- * Initialization screen.
- * @return Returns the appscreen to use next.
- */
-appscreen ApplicationWii::screenInit() {
-    static std::uint8_t print_count = 1;
-
-    // Print loading screen
-    GRRLIB_FillScreen(0x000000FF);
-    printHeader();
-    GRRLIB_Printf(10, 100 + (15 * 5), img_font, 0xFFFFFFFF, 1, "Initializing...");
-    GRRLIB_Render();
-
-    if(print_count++ < 2) {
-        // Make sure both frame buffers are filled
-        return appscreen::initapp;
-    }
-
-    // Init network
-    s32 net_result = -1;
-    while (net_result < 0) {
-        net_deinit();
-        do {
-            net_result = net_init();
-        } while (net_result == -EAGAIN);
-        if (net_result < 0) {
-            scanPads();
-            if (WPAD_ButtonsDown(WPAD_CHAN_0) & WPAD_BUTTON_HOME) {
-                return appscreen::exitapp;
-            }
-
-            printHeader();
-            GRRLIB_Printf(10, 100 + (15 * 5), img_font, 0xFFFFFFFF, 1, "Network initialization failed, retrying...");
-            GRRLIB_Render();
-        }
-    }
-
-    // Load default IP address
-    bool ip_loaded = false;
-    if (pathini.empty() == false) {
-        port = 4242;
-        if (std::ifstream is(pathini); is.good() == true) {
-            std::string ipaddress;
-            inipp::Ini<char> ini;
-            ini.parse(is);
-            inipp::extract(ini.sections["server"]["port"], port);
-            inipp::extract(ini.sections["server"]["ipaddress"], ipaddress);
-            is.close();
-            if(struct in_addr addr; inet_aton(ipaddress.c_str(), &addr) > 0) {
-                IP = std::bit_cast<std::array<uint8_t, 4>>(addr.s_addr);
-                ip_loaded = true;
-            }
-        }
-    }
-    if (ip_loaded == false) {
-        const std::uint32_t ip = net_gethostip();
-        IP[0] = static_cast<std::uint8_t>((ip >> 24) & 0xFF);
-        IP[1] = static_cast<std::uint8_t>((ip >> 16) & 0xFF);
-        IP[2] = static_cast<std::uint8_t>((ip >>  8) & 0xFF);
-        IP[3] = static_cast<std::uint8_t>((ip >>  0) & 0xFF);
-    }
-
-    return appscreen::ipselection;
 }
 
 /**

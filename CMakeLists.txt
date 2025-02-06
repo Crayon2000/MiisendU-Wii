@@ -58,6 +58,9 @@ if(CMAKE_SYSTEM_NAME STREQUAL "NintendoGameCube")
   target_sources(MiisendU PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/source/application_gc.cpp"
   )
+  target_link_libraries(MiisendU PRIVATE
+    bba
+  )
   set_target_properties(MiisendU PROPERTIES OUTPUT_NAME "${PROJECT_NAME}-GC")
 else()
   target_sources(MiisendU PRIVATE

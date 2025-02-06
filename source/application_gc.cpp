@@ -23,6 +23,18 @@ void ApplicationGc::scanPads() {
     PAD_ScanPads(); // Scan the GC Controllers
 }
 
+bool ApplicationGc::isHOMEHeld() {
+    return false;
+}
+
+bool ApplicationGc::isHOMEUp() {
+    return false;
+}
+
+bool ApplicationGc::isHOMEDown() {
+   return false;
+}
+
 /**
  * Print Header.
  */

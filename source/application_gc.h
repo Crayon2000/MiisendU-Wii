@@ -14,10 +14,13 @@ class ApplicationGc : public Application {
         ApplicationGc& operator=(ApplicationGc const&) = delete;
 
     protected:
-        void printHeader();
-        appscreen screenInit() override {return appscreen::exitapp;}
+        void printHeader() override;
         appscreen screenIpSelection() override {return appscreen::exitapp;} 
         appscreen screenSendInput() override {return appscreen::exitapp;}
         void scanPads() override;
+        bool isHOMEHeld() override;
+        bool isHOMEUp() override;
+        bool isHOMEDown() override;
+
 };
 //---------------------------------------------------------------------------
