@@ -126,6 +126,16 @@ void Application::SetPath(std::string_view path) {
 }
 
 /**
+ * Print Header.
+ */
+void Application::printHeader() {
+    for (int y_offset = 10; const auto& line : getLogo()) {
+        GRRLIB_Printf(10, y_offset, img_font, 0xFFFFFFFF, 1, line.data());
+        y_offset  += 15;
+    }
+}
+
+/**
  * Initialization screen.
  * @return Returns the appscreen to use next.
  */

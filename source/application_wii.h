@@ -15,7 +15,7 @@ class ApplicationWii : public Application {
 
     protected:
         void getPadData(PADData& pad_data) override;
-        void printHeader() override;
+        std::span<const std::string_view> getLogo() override;
         void scanPads() override;
         bool isHOMEHeld() override;
         bool isHOMEUp() override;

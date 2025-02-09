@@ -5,8 +5,14 @@
 #include <cstdint>
 #include <string>
 #include <string_view>
+#include <span>
 #include <ogc/lwp.h>
 #include "pad_to_json.h"
+
+/**
+ * Application version.
+ */
+#define VERSIONSTR "0.0.1"
 
 /**
  * Application screens.
@@ -35,12 +41,13 @@ class Application {
         void SetPath(std::string_view path);
 
     protected:
-        appscreen screenInit() ;
+        void printHeader();
+        appscreen screenInit();
         appscreen screenIpSelection();
         appscreen screenSendInput();
 
         virtual void getPadData(PADData& pad_data) = 0;
-        virtual void printHeader() = 0;
+        virtual std::span<const std::string_view> getLogo() = 0;
 
         virtual void scanPads() = 0;
         virtual bool isHOMEHeld() = 0;
@@ -57,7 +64,6 @@ class Application {
         virtual bool isRightHeld() = 0;
         virtual bool isRightDown() = 0;
 
-        GRRLIB_texImg *img_font{nullptr};
         std::string pressHOMEText;
         std::string holdHOMEText;
         std::string selectionText;
@@ -65,6 +71,7 @@ class Application {
     private:
         static bool exitApp;
 
+        GRRLIB_texImg *img_font{nullptr};
         appscreen screenId{appscreen::initapp};
         lwp_t pad_data_thread{LWP_THREAD_NULL};
 
