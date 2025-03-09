@@ -1,10 +1,12 @@
 #include <memory>
 #if defined(HW_RVL)
     #include "application_wii.h"
-    #define APPLICATIONCLASS ApplicationWii
+    using ApplicationType = ApplicationWii;
 #elif defined(HW_DOL)
     #include "application_gc.h"
-    #define APPLICATIONCLASS ApplicationGc
+    using ApplicationType = ApplicationGc;
+#else
+    static_assert(false, "Unsupported platform!");
 #endif
 
 /**
@@ -13,7 +15,7 @@
  * @param argv An array of null-terminated strings representing command-line arguments.
  */
 int main(int argc, char *argv[]) {
-    auto app = std::make_unique<APPLICATIONCLASS>();
+    auto app = std::make_unique<ApplicationType>();
     if(argc > 0 && argv[0] != nullptr) {
         app->SetPath(argv[0]);
     }
