@@ -13,6 +13,7 @@
  * Entry point.
  * @param argc An integer that contains the count of arguments.
  * @param argv An array of null-terminated strings representing command-line arguments.
+ * @return Returns the exit code.
  */
 int main(int argc, char *argv[]) {
     auto app = std::make_unique<ApplicationType>();

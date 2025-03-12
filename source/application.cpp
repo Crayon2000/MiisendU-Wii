@@ -74,7 +74,7 @@ bool Application::Run()
 {
     bool return_value = true;
 
-    // Check if the Wii buttons were pressed
+    // Check if the buttons were pressed
     if(exitApp == true)
     {   // Exit the application
         screenId = appscreen::exitapp;

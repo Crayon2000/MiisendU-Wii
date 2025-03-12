@@ -10,7 +10,7 @@ class ApplicationWii : public Application {
     public:
         ApplicationWii();
         ApplicationWii(ApplicationWii const&) = delete;
-        ~ApplicationWii();
+        ~ApplicationWii() override;
         ApplicationWii& operator=(ApplicationWii const&) = delete;
 
     protected:

@@ -10,7 +10,7 @@ class ApplicationGc : public Application {
     public:
         ApplicationGc();
         ApplicationGc(ApplicationGc const&) = delete;
-        ~ApplicationGc();
+        ~ApplicationGc() override;
         ApplicationGc& operator=(ApplicationGc const&) = delete;
 
     protected:
