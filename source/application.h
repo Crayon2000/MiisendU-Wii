@@ -41,12 +41,14 @@ class Application {
         void SetPath(std::string_view path);
 
     protected:
+        using FuncType = void (*)(PADData& pad_data);
+        inline static FuncType CallDerived = nullptr;
+
         void printHeader();
         appscreen screenInit();
         appscreen screenIpSelection();
         appscreen screenSendInput();
 
-        virtual void getPadData(PADData& pad_data) = 0;
         virtual std::span<const std::string_view> getLogo() = 0;
 
         virtual void scanPads() = 0;

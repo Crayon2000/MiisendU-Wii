@@ -14,7 +14,6 @@ class ApplicationGc : public Application {
         ApplicationGc& operator=(ApplicationGc const&) = delete;
 
     protected:
-        void getPadData(PADData& pad_data) override;
         std::span<const std::string_view> getLogo() override;
         void scanPads() override;
         bool isHOMEHeld() override;
@@ -30,5 +29,8 @@ class ApplicationGc : public Application {
         bool isLeftDown() override;
         bool isRightHeld() override;
         bool isRightDown() override;
+
+    private:
+        static void getPadData(PADData& pad_data);
 };
 //---------------------------------------------------------------------------

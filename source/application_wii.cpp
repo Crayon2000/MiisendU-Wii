@@ -33,6 +33,8 @@ ApplicationWii::ApplicationWii() : Application() {
     pressHOMEText = "Press the HOME button to exit";
     holdHOMEText = "Hold the HOME button to exit.";
     selectionText = "Press 'A' to confirm";
+
+    Application::CallDerived = &ApplicationWii::getPadData;
 }
 
 /**

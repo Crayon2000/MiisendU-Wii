@@ -211,6 +211,10 @@ void *Application::sendPadData([[maybe_unused]] void *arg) {
         PADData pad_data;
         memset(&pad_data, 0, sizeof(PADData));
 
+        // Get the PAD data
+        if (CallDerived != nullptr) {
+            CallDerived(pad_data);
+        }
 
         // Transform to JSON
         auto msg_data = pad_to_json(pad_data);

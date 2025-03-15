@@ -11,6 +11,8 @@ ApplicationGc::ApplicationGc() : Application() {
     pressHOMEText = "Press the MENU button to exit";
     holdHOMEText = "Hold the MENU button to exit.";
     selectionText = "Press 'A' to confirm";
+
+    Application::CallDerived = &ApplicationGc::getPadData;
 }
 
 /**
