@@ -1,18 +1,17 @@
 #include "application_gc.h"
+#include "version.h"
 #include <ogc/pad.h>
 
 /**
  * Constructor for the ApplicationGc class.
  */
-ApplicationGc::ApplicationGc() : Application() {
+ApplicationGc::ApplicationGc() : Application(&ApplicationGc::getPadData) {
     // Initialise the GC Controllers
     PAD_Init();
 
     pressHOMEText = "Press the MENU button to exit";
     holdHOMEText = "Hold the MENU button to exit.";
     selectionText = "Press 'A' to confirm";
-
-    Application::CallDerived = &ApplicationGc::getPadData;
 }
 
 /**

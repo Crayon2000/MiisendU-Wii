@@ -47,13 +47,16 @@ bool Application::exitApp = false;
 
 /**
  * Constructor for the Application class.
+ * @param func The function to call to get data.
  */
-Application::Application() {
+Application::Application(PadDataFunc func) {
     // Initialise the Graphics & Video subsystem
     GRRLIB_Init();
 
     img_font = GRRLIB_LoadTextureTPL(textures_tpl, TPL_ID_FONT);
     GRRLIB_InitTileSet(img_font, 8, 20, 32);
+
+    CallDerived = func;
 }
 
 /**

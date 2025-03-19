@@ -10,11 +10,6 @@
 #include "pad_to_json.h"
 
 /**
- * Application version.
- */
-#define VERSIONSTR "0.0.1"
-
-/**
  * Application screens.
  */
 enum class appscreen : std::uint8_t {
@@ -30,8 +25,11 @@ struct GRRLIB_texImg;
  * Application class.
  */
 class Application {
+    using PadDataFunc = void (*)(PADData& pad_data);
+
     public:
-        Application();
+        Application() = delete;
+        Application(PadDataFunc func);
         Application(Application const&) = delete;
         virtual ~Application();
         Application& operator=(Application const&) = delete;
@@ -41,9 +39,6 @@ class Application {
         void SetPath(std::string_view path);
 
     protected:
-        using FuncType = void (*)(PADData& pad_data);
-        inline static FuncType CallDerived = nullptr;
-
         void printHeader();
         appscreen screenInit();
         appscreen screenIpSelection();
@@ -71,6 +66,7 @@ class Application {
         std::string selectionText;
 
     private:
+        inline static PadDataFunc CallDerived{nullptr};
         static bool exitApp;
 
         GRRLIB_texImg *img_font{nullptr};

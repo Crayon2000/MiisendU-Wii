@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.18)
-project(MiisendU)
+project(MiisendU VERSION 0.0.1)
+
+configure_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/source/version.h.in"
+  "${CMAKE_CURRENT_SOURCE_DIR}/source/version.h"
+)
 
 find_library(FAT fat
   PATHS "${OGC_ROOT}/lib/${OGC_SUBDIR}"

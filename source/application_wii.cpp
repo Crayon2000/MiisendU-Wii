@@ -1,4 +1,5 @@
 #include "application_wii.h"
+#include "version.h"
 #include <wiiuse/wpad.h>
 #include <ogc/pad.h>
 
@@ -21,7 +22,7 @@ static void WiiPowerPressed()
 /**
  * Constructor for the ApplicationWii class.
  */
-ApplicationWii::ApplicationWii() : Application() {
+ApplicationWii::ApplicationWii() : Application(&ApplicationWii::getPadData) {
     // Initialise the Wii Remotes and GC Controllers
     WPAD_Init();
     PAD_Init();
@@ -33,8 +34,6 @@ ApplicationWii::ApplicationWii() : Application() {
     pressHOMEText = "Press the HOME button to exit";
     holdHOMEText = "Hold the HOME button to exit.";
     selectionText = "Press 'A' to confirm";
-
-    Application::CallDerived = &ApplicationWii::getPadData;
 }
 
 /**
