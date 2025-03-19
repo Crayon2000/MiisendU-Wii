@@ -4,7 +4,10 @@
 #include <array>
 #include <cstdint>
 #include <string>
+#include <string_view>
+#include <span>
 #include <ogc/lwp.h>
+#include "pad_to_json.h"
 
 /**
  * Application screens.
@@ -22,13 +25,17 @@ struct GRRLIB_texImg;
  * Application class.
  */
 class Application {
+    using PadDataFunc = void (*)(PADData& pad_data);
+
     public:
-        Application();
+        Application() = delete;
+        Application(PadDataFunc func);
         Application(Application const&) = delete;
-        ~Application();
+        virtual ~Application();
         Application& operator=(Application const&) = delete;
 
         bool Run();
+        static void Quit();
         void SetPath(std::string_view path);
 
     protected:
@@ -37,7 +44,31 @@ class Application {
         appscreen screenIpSelection();
         appscreen screenSendInput();
 
+        virtual std::span<const std::string_view> getLogo() = 0;
+
+        virtual void scanPads() = 0;
+        virtual bool isHOMEHeld() = 0;
+        virtual bool isHOMEUp() = 0;
+        virtual bool isHOMEDown() = 0;
+        virtual bool isSelectionHeld() = 0;
+        virtual bool isSelectionDown() = 0;
+        virtual bool isUpHeld() = 0;
+        virtual bool isUpDown() = 0;
+        virtual bool isDownHeld() = 0;
+        virtual bool isDownDown() = 0;
+        virtual bool isLeftHeld() = 0;
+        virtual bool isLeftDown() = 0;
+        virtual bool isRightHeld() = 0;
+        virtual bool isRightDown() = 0;
+
+        std::string pressHOMEText;
+        std::string holdHOMEText;
+        std::string selectionText;
+
     private:
+        inline static PadDataFunc CallDerived{nullptr};
+        static bool exitApp;
+
         GRRLIB_texImg *img_font{nullptr};
         appscreen screenId{appscreen::initapp};
         lwp_t pad_data_thread{LWP_THREAD_NULL};
@@ -52,5 +83,7 @@ class Application {
         std::string pathini{};
         std::uint32_t wait_time_horizontal{0};
         std::uint32_t wait_time_vertical{0};
+
+        static void *sendPadData(void* arg);
 };
 //---------------------------------------------------------------------------

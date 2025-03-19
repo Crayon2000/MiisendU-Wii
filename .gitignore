@@ -5,6 +5,9 @@
 *.dol
 *.elf
 
+# Generated files
+version.h
+
 # Archive
 *.zip
 

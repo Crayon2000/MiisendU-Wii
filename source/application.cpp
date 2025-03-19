@@ -11,8 +11,6 @@
 #include <grrlib.h>
 #include <inipp.h>
 #include <cstdlib>
-#include <wiiuse/wpad.h>
-#include <ogc/pad.h>
 #include <network.h>
 
 /**
@@ -31,48 +29,34 @@ static u8 send_data_stack[STACKSIZE] ATTRIBUTE_ALIGN(8);
 static std::atomic<bool> running{true};
 
 /**
- * Callbacks will set this to true if called.
- */
-static bool exitApp = false;
-
-/**
  * Wait time in frames.
  */
 static constexpr std::uint8_t wait_time = 14;
 
 /**
- * Callback for the reset button on the Wii.
+ * Callbacks will set this to true if called.
  */
-static void WiiResetPressed([[maybe_unused]] std::uint32_t irq, [[maybe_unused]] void* ctx)
-{
-    exitApp = true;
-}
+bool Application::exitApp = false;
 
 /**
- * Callback for the power button on the Wii.
+ * Fix linker error for net_deinit on gamecube.
  */
-static void WiiPowerPressed()
-{
-    exitApp = true;
-}
+#if defined(HW_DOL)
+    void net_deinit() {}
+#endif
 
 /**
  * Constructor for the Application class.
+ * @param func The function to call to get data.
  */
-Application::Application() {
+Application::Application(PadDataFunc func) {
     // Initialise the Graphics & Video subsystem
     GRRLIB_Init();
 
-    // Initialise the Wii Remotes and GC Controllers
-    WPAD_Init();
-    PAD_Init();
-
-    // Register callbacks
-    SYS_SetResetCallback(WiiResetPressed);
-    SYS_SetPowerCallback(WiiPowerPressed);
-
     img_font = GRRLIB_LoadTextureTPL(textures_tpl, TPL_ID_FONT);
     GRRLIB_InitTileSet(img_font, 8, 20, 32);
+
+    CallDerived = func;
 }
 
 /**
@@ -81,7 +65,6 @@ Application::Application() {
 Application::~Application()
 {
     free(img_font);
-    WPAD_Shutdown();
     net_deinit();
     GRRLIB_Exit(); // Be a good boy, clear the memory allocated by GRRLIB
 }
@@ -94,7 +77,7 @@ bool Application::Run()
 {
     bool return_value = true;
 
-    // Check if the Wii buttons were pressed
+    // Check if the buttons were pressed
     if(exitApp == true)
     {   // Exit the application
         screenId = appscreen::exitapp;
@@ -106,8 +89,7 @@ bool Application::Run()
             screenId = screenInit();
             return true;
         case appscreen::ipselection:
-            WPAD_ReadPending(WPAD_CHAN_ALL, nullptr); // Scan the Wii remotes
-            PAD_ScanPads(); // Scan the GC Controllers
+            scanPads();
             screenId = screenIpSelection();
             break;
         case appscreen::sendinput:
@@ -127,6 +109,14 @@ bool Application::Run()
 }
 
 /**
+ * Quit application.
+ */
+void Application::Quit()
+{
+    exitApp = true;
+}
+
+/**
  * Set application path.
  * @param path The path to set.
  */
@@ -142,15 +132,10 @@ void Application::SetPath(std::string_view path) {
  * Print Header.
  */
 void Application::printHeader() {
-    constexpr char logo1[] = R"( __  __ _ _                 _ _   _  __      ___ _ )";
-    constexpr char logo2[] = R"(|  \/  (_|_)___ ___ _ _  __| | | | | \ \    / (_|_))";
-    constexpr char logo3[] = R"(| |\/| | | (_-</ -_) ' \/ _` | |_| |  \ \/\/ /| | |)";
-    constexpr char logo4[] = R"(|_|  |_|_|_/__/\___|_||_\__,_|\___/    \_/\_/ |_|_| v0.0.1)";
-
-    GRRLIB_Printf(10, 10 + (15 * 1), img_font, 0xFFFFFFFF, 1, logo1);
-    GRRLIB_Printf(10, 10 + (15 * 2), img_font, 0xFFFFFFFF, 1, logo2);
-    GRRLIB_Printf(10, 10 + (15 * 3), img_font, 0xFFFFFFFF, 1, logo3);
-    GRRLIB_Printf(10, 10 + (15 * 4), img_font, 0xFFFFFFFF, 1, logo4);
+    for (int y_offset = 10; const auto& line : getLogo()) {
+        GRRLIB_Printf(10, y_offset, img_font, 0xFFFFFFFF, 1, line.data());
+        y_offset  += 15;
+    }
 }
 
 /**
@@ -179,8 +164,8 @@ appscreen Application::screenInit() {
             net_result = net_init();
         } while (net_result == -EAGAIN);
         if (net_result < 0) {
-            WPAD_ReadPending(WPAD_CHAN_ALL, nullptr);
-            if (WPAD_ButtonsDown(WPAD_CHAN_0) & WPAD_BUTTON_HOME) {
+            scanPads();
+            if (isHOMEDown() == true) {
                 return appscreen::exitapp;
             }
 
@@ -223,44 +208,15 @@ appscreen Application::screenInit() {
  * @param arg Unused.
  * @return Returns the appscreen to use next.
  */
-static void *sendPadData([[maybe_unused]] void *arg) {
+void *Application::sendPadData([[maybe_unused]] void *arg) {
     while(running == true) {
-        for(s32 i = WPAD_CHAN_0; i < WPAD_MAX_WIIMOTES; ++i) {
-            WPAD_ReadPending(i, nullptr);
-        }
-        PADStatus padstatus[PAD_CHANMAX];
-        PAD_Read(padstatus);
-
+        // Get the pad data
         PADData pad_data;
         memset(&pad_data, 0, sizeof(PADData));
 
-        if(WPADData *wpad_data0 = WPAD_Data(WPAD_CHAN_0);
-            wpad_data0->err == WPAD_ERR_NONE && wpad_data0->data_present > 0) {
-            pad_data.wpad[WPAD_CHAN_0] = wpad_data0;
-        }
-        if(WPADData *wpad_data1 = WPAD_Data(WPAD_CHAN_1);
-            wpad_data1->err == WPAD_ERR_NONE && wpad_data1->data_present > 0) {
-            pad_data.wpad[WPAD_CHAN_1] = wpad_data1;
-        }
-        if(WPADData *wpad_data2 = WPAD_Data(WPAD_CHAN_2);
-            wpad_data2->err == WPAD_ERR_NONE && wpad_data2->data_present > 0) {
-            pad_data.wpad[WPAD_CHAN_2] = wpad_data2;
-        }
-        if(WPADData *wpad_data3 = WPAD_Data(WPAD_CHAN_3);
-            wpad_data3->err == WPAD_ERR_NONE && wpad_data3->data_present > 0) {
-            pad_data.wpad[WPAD_CHAN_3] = wpad_data3;
-        }
-        if(padstatus[PAD_CHAN0].err == PAD_ERR_NONE) {
-            pad_data.pad[PAD_CHAN0] = &padstatus[PAD_CHAN0];
-        }
-        if(padstatus[PAD_CHAN1].err == PAD_ERR_NONE) {
-            pad_data.pad[PAD_CHAN1] = &padstatus[PAD_CHAN1];
-        }
-        if(padstatus[PAD_CHAN2].err == PAD_ERR_NONE) {
-            pad_data.pad[PAD_CHAN2] = &padstatus[PAD_CHAN2];
-        }
-        if(padstatus[PAD_CHAN3].err == PAD_ERR_NONE) {
-            pad_data.pad[PAD_CHAN3] = &padstatus[PAD_CHAN3];
+        // Get the PAD data
+        if (CallDerived != nullptr) {
+            CallDerived(pad_data);
         }
 
         // Transform to JSON
@@ -283,13 +239,11 @@ static void *sendPadData([[maybe_unused]] void *arg) {
  * @return Returns the appscreen to use next.
  */
 appscreen Application::screenIpSelection() {
-    WPADData *wpad_data0 = WPAD_Data(WPAD_CHAN_0);
-
     // If [HOME] was pressed on the first Wii Remote, break out of the loop
-    if (wpad_data0->btns_d & WPAD_BUTTON_HOME) {
+    if (isHOMEDown() == true) {
         return appscreen::exitapp;
     }
-    if (wpad_data0->btns_d & WPAD_BUTTON_A) {
+    if (isSelectionDown() == true) {
         // Get IP Address (without spaces)
         ip_address = std::format("{}.{}.{}.{}", IP[0], IP[1], IP[2], IP[3]);
 
@@ -306,26 +260,26 @@ appscreen Application::screenIpSelection() {
         return appscreen::sendinput;
     }
 
-    if (wpad_data0->btns_h & WPAD_BUTTON_LEFT  && selected_digit > 0) {
-        if (wpad_data0->btns_d & WPAD_BUTTON_LEFT || wait_time_horizontal++ > wait_time) {
+    if (isLeftHeld() == true  && selected_digit > 0) {
+        if (isLeftDown() == true || wait_time_horizontal++ > wait_time) {
             selected_digit--;
             wait_time_horizontal = 0;
         }
     }
-    if (wpad_data0->btns_h & WPAD_BUTTON_RIGHT && selected_digit < 3) {
-        if (wpad_data0->btns_d & WPAD_BUTTON_RIGHT || wait_time_horizontal++ > wait_time) {
+    if (isRightHeld() == true && selected_digit < 3) {
+        if (isRightDown() == true || wait_time_horizontal++ > wait_time) {
             selected_digit++;
             wait_time_horizontal = 0;
         }
     }
-    if (wpad_data0->btns_h & WPAD_BUTTON_UP) {
-        if (wpad_data0->btns_d & WPAD_BUTTON_UP || wait_time_vertical++ > wait_time) {
+    if (isUpHeld() == true) {
+        if (isUpDown() == true || wait_time_vertical++ > wait_time) {
             IP[selected_digit] = (IP[selected_digit] < 255) ? (IP[selected_digit] + 1) : 0;
             wait_time_vertical = 0;
         }
     }
-    if (wpad_data0->btns_h & WPAD_BUTTON_DOWN) {
-        if (wpad_data0->btns_d & WPAD_BUTTON_DOWN || wait_time_vertical++ > wait_time) {
+    if (isDownHeld() == true) {
+        if (isDownDown() == true || wait_time_vertical++ > wait_time) {
             IP[selected_digit] = (IP[selected_digit] >   0) ? (IP[selected_digit] - 1) : 255;
             wait_time_vertical = 0;
         }
@@ -346,9 +300,9 @@ appscreen Application::screenIpSelection() {
         ip_str.c_str());
 
     GRRLIB_Printf(10, 100 + (15 * 15), img_font, 0xFFFFFFFF, 1,
-        "Press 'A' to confirm");
+        selectionText.c_str());
     GRRLIB_Printf(10, 100 + (15 * 16), img_font, 0xFFFFFFFF, 1,
-        "Press the HOME button to exit");
+        pressHOMEText.c_str());
 
     // Stay on this screen
     return appscreen::ipselection;
@@ -359,10 +313,8 @@ appscreen Application::screenIpSelection() {
  * @return Returns the appscreen to use next.
  */
 appscreen Application::screenSendInput() {
-    WPADData *wpad_data0 = WPAD_Data(WPAD_CHAN_0);
-
     // Check for exit signal
-    if (wpad_data0->btns_h & WPAD_BUTTON_HOME && ++holdTime > 240) {
+    if (isHOMEHeld() == true && ++holdTime > 240) {
         running = false;
         LWP_JoinThread(pad_data_thread, nullptr);
 
@@ -382,7 +334,7 @@ appscreen Application::screenSendInput() {
 
         return appscreen::exitapp;
     }
-    if (wpad_data0->btns_u & WPAD_BUTTON_HOME) {
+    if (isHOMEUp() == true) {
         holdTime = 0;
     }
 
@@ -397,7 +349,7 @@ appscreen Application::screenSendInput() {
     GRRLIB_Printf(10, 100 + (15 * 9), img_font, 0xFFFFFFFF, 1,
         "You can get UsendMii from http://wiiubrew.org/wiki/UsendMii");
     GRRLIB_Printf(10, 100 + (15 * 16), img_font, 0xFFFFFFFF, 1,
-        "Hold the HOME button to exit.");
+        holdHOMEText.c_str());
 
     // Stay on this screen
     return appscreen::sendinput;

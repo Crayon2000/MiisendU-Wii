@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.18)
-project(MiisendU-Wii)
+project(MiisendU VERSION 0.0.1)
+
+configure_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/source/version.h.in"
+  "${CMAKE_CURRENT_SOURCE_DIR}/source/version.h"
+)
 
 find_library(FAT fat
   PATHS "${OGC_ROOT}/lib/${OGC_SUBDIR}"
@@ -24,11 +29,11 @@ FetchContent_Declare(grrlib
 FetchContent_Populate(rapidjson)
 FetchContent_MakeAvailable(inipp grrlib)
 
-add_executable(MiisendU-Wii)
+add_executable(MiisendU)
 
-target_compile_features(MiisendU-Wii PRIVATE cxx_std_20)
+target_compile_features(MiisendU PRIVATE cxx_std_20)
 
-target_compile_options(MiisendU-Wii PRIVATE
+target_compile_options(MiisendU PRIVATE
   -Werror
   -Wall
   -Wextra
@@ -48,14 +53,28 @@ target_compile_options(MiisendU-Wii PRIVATE
   -Wsuggest-override
 )
 
-target_sources(MiisendU-Wii PRIVATE
+target_sources(MiisendU PRIVATE
   "${CMAKE_CURRENT_SOURCE_DIR}/source/main.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/source/application.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/source/udp.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/source/pad_to_json.cpp"
 )
+if(CMAKE_SYSTEM_NAME STREQUAL "NintendoGameCube")
+  target_sources(MiisendU PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/source/application_gc.cpp"
+  )
+  target_link_libraries(MiisendU PRIVATE
+    bba
+  )
+  set_target_properties(MiisendU PROPERTIES OUTPUT_NAME "${PROJECT_NAME}-GC")
+else()
+  target_sources(MiisendU PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/source/application_wii.cpp"
+  )
+  set_target_properties(MiisendU PROPERTIES OUTPUT_NAME "${PROJECT_NAME}-Wii")
+endif()
 
-target_include_directories(MiisendU-Wii PRIVATE
+target_include_directories(MiisendU PRIVATE
   "${CMAKE_CURRENT_SOURCE_DIR}/source"
   "${rapidjson_SOURCE_DIR}/include"
 )
@@ -65,7 +84,7 @@ add_embedded_tpl(data
   "${CMAKE_CURRENT_SOURCE_DIR}/data/textures.scf"
 )
 
-target_link_libraries(MiisendU-Wii PRIVATE
+target_link_libraries(MiisendU PRIVATE
   data
   grrlib
   ${FAT}
@@ -73,4 +92,4 @@ target_link_libraries(MiisendU-Wii PRIVATE
   inipp::inipp
 )
 
-ogc_create_dol(MiisendU-Wii)
+ogc_create_dol(MiisendU)
