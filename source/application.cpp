@@ -231,8 +231,7 @@ static void *sendPadData([[maybe_unused]] void *arg) {
         PADStatus padstatus[PAD_CHANMAX];
         PAD_Read(padstatus);
 
-        PADData pad_data;
-        memset(&pad_data, 0, sizeof(PADData));
+        PADData pad_data{};
 
         if(WPADData *wpad_data0 = WPAD_Data(WPAD_CHAN_0);
             wpad_data0->err == WPAD_ERR_NONE && wpad_data0->data_present > 0) {

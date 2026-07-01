@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.31)
 project(MiisendU-Wii)
 
 find_library(FAT fat
@@ -13,7 +13,7 @@ pkg_check_modules(FREETYPE REQUIRED freetype2)
 
 include(FetchContent)
 FetchContent_Declare(inipp
-  URL https://github.com/mcmtroffaes/inipp/archive/3c1668812026f1a94471b85ac5ab11ab87c43607.tar.gz
+  URL https://github.com/mcmtroffaes/inipp/archive/3f224f1eed7a67d5d7e5fc8cab72de02a056b966.tar.gz
 )
 FetchContent_Declare(rapidjson
   URL https://github.com/Tencent/rapidjson/archive/refs/heads/master.tar.gz
@@ -21,12 +21,17 @@ FetchContent_Declare(rapidjson
 FetchContent_Declare(grrlib
   URL https://github.com/GRRLIB/GRRLIB/archive/refs/heads/master.tar.gz
 )
-FetchContent_Populate(rapidjson)
-FetchContent_MakeAvailable(inipp grrlib)
+set(RAPIDJSON_BUILD_DOC OFF CACHE BOOL "Disable rapidjson documentation build" FORCE)
+set(RAPIDJSON_BUILD_EXAMPLES OFF CACHE BOOL "Disable rapidjson examples build" FORCE)
+set(RAPIDJSON_BUILD_TESTS OFF CACHE BOOL "Disable rapidjson tests build" FORCE)
+set(RAPIDJSON_BUILD_CXX11 OFF CACHE BOOL "Disable C++11" FORCE)
+set(RAPIDJSON_BUILD_CXX17 OFF CACHE BOOL "Disable C++17" FORCE)
+set(RAPIDJSON_BUILD_CXX20 ON CACHE BOOL "Enable C++20" FORCE)
+FetchContent_MakeAvailable(inipp rapidjson grrlib)
 
 add_executable(MiisendU-Wii)
 
-target_compile_features(MiisendU-Wii PRIVATE cxx_std_20)
+target_compile_features(MiisendU-Wii PRIVATE cxx_std_26)
 
 target_compile_options(MiisendU-Wii PRIVATE
   -Werror

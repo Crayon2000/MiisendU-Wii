@@ -1,31 +1,31 @@
 #include "pad_to_json.h"
-#include <map>
+#include <array>
 #include <cmath>
 #include "rapidjson/writer.h"
 
 /**
  * Mask for the Wii Remote.
  */
-static const std::map wiimask = {
+static constexpr std::array wiimask {
     std::pair{WPAD_BUTTON_LEFT, 0x0001},
-    {WPAD_BUTTON_RIGHT, 0x0002},
-    {WPAD_BUTTON_DOWN, 0x0004},
-    {WPAD_BUTTON_UP, 0x0008},
-    {WPAD_BUTTON_PLUS, 0x0010},
-    {WPAD_BUTTON_2, 0x0100},
-    {WPAD_BUTTON_1, 0x0200},
-    {WPAD_BUTTON_B, 0x0400},
-    {WPAD_BUTTON_A, 0x0800},
-    {WPAD_BUTTON_MINUS, 0x1000},
-    {WPAD_BUTTON_HOME, 0x8000},
+    std::pair{WPAD_BUTTON_RIGHT, 0x0002},
+    std::pair{WPAD_BUTTON_DOWN, 0x0004},
+    std::pair{WPAD_BUTTON_UP, 0x0008},
+    std::pair{WPAD_BUTTON_PLUS, 0x0010},
+    std::pair{WPAD_BUTTON_2, 0x0100},
+    std::pair{WPAD_BUTTON_1, 0x0200},
+    std::pair{WPAD_BUTTON_B, 0x0400},
+    std::pair{WPAD_BUTTON_A, 0x0800},
+    std::pair{WPAD_BUTTON_MINUS, 0x1000},
+    std::pair{WPAD_BUTTON_HOME, 0x8000},
 };
 
 /**
  * Mask for the Nunchuk.
  */
-static const std::map nunchukmask = {
+static constexpr std::array nunchukmask {
     std::pair{WPAD_NUNCHUK_BUTTON_Z, 0x2000},
-    {WPAD_NUNCHUK_BUTTON_C, 0x4000}
+    std::pair{WPAD_NUNCHUK_BUTTON_C, 0x4000}
 };
 
 /**
@@ -73,7 +73,7 @@ std::string pad_to_json(const PADData& pad_data)
     {
         writer.Key("wiiRemotes");
         writer.StartArray();
-        for(u8 i = 0; i < 4; ++i)
+        for(std::size_t i = 0; i < pad_data.wpad.size(); ++i)
         {
             if(pad_data.wpad[i] == nullptr)
             {
@@ -81,7 +81,7 @@ std::string pad_to_json(const PADData& pad_data)
             }
 
             u32 holdwii = 0;
-            u32 badwii = pad_data.wpad[i]->btns_h;
+            const u32 badwii = pad_data.wpad[i]->btns_h;
             for (auto const& [oldid, newid] : wiimask)
             {
                 if(badwii & oldid) {
@@ -187,7 +187,7 @@ std::string pad_to_json(const PADData& pad_data)
     {
         writer.Key("gameCubeControllers");
         writer.StartArray();
-        for(u8 i = 0; i < 4; ++i)
+        for(std::size_t i = 0; i < pad_data.pad.size(); ++i)
         {
             if(pad_data.pad[i] == nullptr)
             {
